@@ -1,0 +1,2821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Database Systems 621 — Interactive Quiz Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <style>
+    /* ================================================
+       CSS CUSTOM PROPERTIES — MATERIAL YOU / M3 PALETTE
+       ================================================ */
+    :root {
+      --md-primary:       #4285F4;
+      --md-primary-dark:  #1a56c4;
+      --md-primary-light: #d2e3fc;
+      --md-secondary:     #34A853;
+      --md-error:         #EA4335;
+      --md-warning:       #FBBC04;
+      --md-surface:       #FFFFFF;
+      --md-surface-2:     #F8F9FA;
+      --md-surface-3:     #EEF2FF;
+      --md-outline:       #DADCE0;
+      --md-on-surface:    #202124;
+      --md-on-surface-2:  #5F6368;
+      --md-on-surface-3:  #80868B;
+      --elevation-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+      --elevation-2: 0 3px 6px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.08);
+      --elevation-3: 0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+      --radius-sm:   8px;
+      --radius-md:   16px;
+      --radius-lg:   24px;
+      --radius-pill: 100px;
+      --transition:  all 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ========================
+       RESET & BASE
+       ======================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--md-surface-2);
+      color: var(--md-on-surface);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    h1,h2,h3,h4,h5 { font-family: 'Open Sans', sans-serif; }
+
+    /* ========================
+       TOP APP BAR
+       ======================== */
+    .app-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--md-surface);
+      border-bottom: 1px solid var(--md-outline);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 24px;
+      height: 64px;
+      box-shadow: var(--elevation-1);
+    }
+    .app-bar__logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .app-bar__logo-mark {
+      width: 36px;
+      height: 36px;
+      background: var(--md-primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .app-bar__logo-mark span { color: #fff; font-size: 20px; }
+    .app-bar__title {
+      font-family: 'Open Sans', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--md-on-surface);
+    }
+    .app-bar__subtitle {
+      font-size: 12px;
+      color: var(--md-on-surface-2);
+      font-weight: 400;
+    }
+    .app-bar__spacer { flex: 1; }
+    .app-bar__badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--md-surface-2);
+      border: 1px solid var(--md-outline);
+      border-radius: var(--radius-pill);
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--md-on-surface-2);
+      font-weight: 500;
+    }
+    .app-bar__badge .material-icons-round { font-size: 16px; color: var(--md-primary); }
+
+    /* ========================
+       SCREENS
+       ======================== */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ========================
+       HOME SCREEN
+       ======================== */
+    .home-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+    .home-hero {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+    .home-hero__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--md-primary-light);
+      color: var(--md-primary-dark);
+      border-radius: var(--radius-pill);
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .home-hero__title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      color: var(--md-on-surface);
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .home-hero__title span { color: var(--md-primary); }
+    .home-hero__desc {
+      font-size: 16px;
+      color: var(--md-on-surface-2);
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* STAT STRIP */
+    .stat-strip {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 56px;
+    }
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--md-surface);
+      border: 1px solid var(--md-outline);
+      border-radius: var(--radius-pill);
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--elevation-1);
+    }
+    .stat-chip .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .dot-easy   { background: var(--md-secondary); }
+    .dot-medium { background: var(--md-warning); }
+    .dot-hard   { background: var(--md-error); }
+
+    /* TOPIC CARDS */
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .topic-card {
+      background: var(--md-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--elevation-2);
+      overflow: hidden;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 2px solid transparent;
+      position: relative;
+    }
+    .topic-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--elevation-3);
+      border-color: var(--md-primary);
+    }
+    .topic-card__header {
+      padding: 28px 28px 20px;
+      position: relative;
+    }
+    .topic-card__icon-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .topic-card__icon {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .topic-card__icon .material-icons-round { font-size: 28px; color: #fff; }
+    .icon-blue   { background: linear-gradient(135deg, #4285F4, #1a56c4); }
+    .icon-green  { background: linear-gradient(135deg, #34A853, #1e7e3a); }
+    .icon-purple { background: linear-gradient(135deg, #9334EA, #6b21a8); }
+    .topic-card__chap-badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--md-on-surface-3);
+      background: var(--md-surface-2);
+      border-radius: var(--radius-pill);
+      padding: 4px 10px;
+      border: 1px solid var(--md-outline);
+    }
+    .topic-card__title {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--md-on-surface);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .topic-card__desc {
+      font-size: 13px;
+      color: var(--md-on-surface-2);
+      line-height: 1.55;
+    }
+    .topic-card__footer {
+      padding: 16px 28px 24px;
+      border-top: 1px solid var(--md-outline);
+    }
+    .diff-pills {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .diff-pill {
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: var(--radius-pill);
+      padding: 4px 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .diff-pill.easy   { background: #E6F4EA; color: #137333; }
+    .diff-pill.medium { background: #FEF7E0; color: #B06000; }
+    .diff-pill.hard   { background: #FCE8E6; color: #C5221F; }
+    .diff-pill .material-icons-round { font-size: 12px; }
+    .topic-card__cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topic-card__q-count {
+      font-size: 13px;
+      color: var(--md-on-surface-2);
+      font-weight: 500;
+    }
+    .btn-start {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--md-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Roboto', sans-serif;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 2px 8px rgba(66,133,244,0.35);
+    }
+    .btn-start:hover { background: var(--md-primary-dark); box-shadow: 0 4px 12px rgba(66,133,244,0.45); }
+    .btn-start .material-icons-round { font-size: 18px; }
+
+    /* ========================
+       QUIZ SCREEN LAYOUT
+       ======================== */
+    .quiz-layout {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 24px;
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .quiz-layout { grid-template-columns: 1fr; }
+      .quiz-sidebar { order: -1; }
+    }
+
+    /* ========================
+       QUIZ HEADER STRIP
+       ======================== */
+    .quiz-header {
+      background: var(--md-surface);
+      border-bottom: 1px solid var(--md-outline);
+      padding: 14px 24px;
+    }
+    .quiz-header__inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .quiz-header__back {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--md-primary);
+      background: none;
+      border: none;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 6px 10px 6px 4px;
+      border-radius: var(--radius-pill);
+      transition: var(--transition);
+    }
+    .quiz-header__back:hover { background: var(--md-primary-light); }
+    .quiz-header__back .material-icons-round { font-size: 20px; }
+    .quiz-header__info { flex: 1; }
+    .quiz-header__topic {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--md-on-surface);
+      font-family: 'Open Sans', sans-serif;
+    }
+    .quiz-header__meta {
+      font-size: 12px;
+      color: var(--md-on-surface-2);
+      margin-top: 2px;
+    }
+    .quiz-header__progress-wrap { width: 220px; }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--md-on-surface-2);
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--md-outline);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .progress-bar__fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--md-primary), #7baef8);
+      border-radius: var(--radius-pill);
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ========================
+       QUESTION CARD
+       ======================== */
+    .question-card {
+      background: var(--md-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--elevation-2);
+      overflow: hidden;
+    }
+    .question-card__top {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--md-outline);
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .question-card__num-badge {
+      min-width: 42px;
+      height: 42px;
+      background: var(--md-primary-light);
+      color: var(--md-primary-dark);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      font-family: 'Open Sans', sans-serif;
+      flex-shrink: 0;
+    }
+    .question-card__meta { flex: 1; }
+    .question-card__tags { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      border-radius: var(--radius-pill);
+      padding: 3px 10px;
+    }
+    .tag-easy   { background: #E6F4EA; color: #137333; }
+    .tag-medium { background: #FEF7E0; color: #B06000; }
+    .tag-hard   { background: #FCE8E6; color: #C5221F; }
+    .tag-concept { background: var(--md-surface-3); color: var(--md-primary-dark); }
+    .question-card__text {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--md-on-surface);
+      line-height: 1.55;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .question-card__body { padding: 24px 28px; }
+    .options-list { display: flex; flex-direction: column; gap: 12px; }
+    .option-chip {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      border: 2px solid var(--md-outline);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+      background: var(--md-surface);
+      text-align: left;
+      width: 100%;
+      font-family: 'Roboto', sans-serif;
+    }
+    .option-chip:hover:not(.disabled) {
+      border-color: var(--md-primary);
+      background: var(--md-primary-light);
+    }
+    .option-chip.selected {
+      border-color: var(--md-primary);
+      background: var(--md-primary-light);
+    }
+    .option-chip.correct {
+      border-color: var(--md-secondary);
+      background: #E6F4EA;
+    }
+    .option-chip.wrong {
+      border-color: var(--md-error);
+      background: #FCE8E6;
+    }
+    .option-chip.disabled { cursor: default; }
+    .option-chip__letter {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--md-surface-2);
+      border: 2px solid var(--md-outline);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--md-on-surface-2);
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+    .option-chip.selected .option-chip__letter {
+      background: var(--md-primary);
+      border-color: var(--md-primary);
+      color: #fff;
+    }
+    .option-chip.correct .option-chip__letter {
+      background: var(--md-secondary);
+      border-color: var(--md-secondary);
+      color: #fff;
+    }
+    .option-chip.wrong .option-chip__letter {
+      background: var(--md-error);
+      border-color: var(--md-error);
+      color: #fff;
+    }
+    .option-chip__text {
+      font-size: 14px;
+      color: var(--md-on-surface);
+      line-height: 1.5;
+      flex: 1;
+    }
+    .option-chip__icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .option-chip.correct .option-chip__icon { color: var(--md-secondary); }
+    .option-chip.wrong   .option-chip__icon { color: var(--md-error); }
+
+    /* FEEDBACK BOX */
+    .feedback-box {
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      line-height: 1.6;
+      display: none;
+    }
+    .feedback-box.show { display: block; }
+    .feedback-box.correct { background: #E6F4EA; border-left: 4px solid var(--md-secondary); color: #137333; }
+    .feedback-box.wrong   { background: #FCE8E6; border-left: 4px solid var(--md-error);     color: #C5221F; }
+    .feedback-box strong  { font-weight: 700; }
+
+    /* NAV BUTTONS */
+    .question-card__nav {
+      padding: 16px 28px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: var(--radius-pill);
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Roboto', sans-serif;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 2px solid var(--md-outline);
+      background: var(--md-surface);
+      color: var(--md-on-surface-2);
+    }
+    .btn-nav:hover:not(:disabled) {
+      border-color: var(--md-primary);
+      color: var(--md-primary);
+      background: var(--md-primary-light);
+    }
+    .btn-nav:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-nav .material-icons-round { font-size: 18px; }
+    .btn-nav.primary {
+      background: var(--md-primary);
+      color: #fff;
+      border-color: var(--md-primary);
+      box-shadow: 0 2px 8px rgba(66,133,244,0.35);
+    }
+    .btn-nav.primary:hover:not(:disabled) {
+      background: var(--md-primary-dark);
+      border-color: var(--md-primary-dark);
+    }
+    .btn-nav.submit {
+      background: var(--md-secondary);
+      color: #fff;
+      border-color: var(--md-secondary);
+      box-shadow: 0 2px 8px rgba(52,168,83,0.35);
+    }
+    .btn-nav.submit:hover { background: #1e7e3a; border-color: #1e7e3a; }
+
+    /* ========================
+       SIDEBAR
+       ======================== */
+    .quiz-sidebar { position: sticky; top: 88px; }
+    .sidebar-card {
+      background: var(--md-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--elevation-2);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .sidebar-card__header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--md-outline);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--md-on-surface);
+      font-family: 'Open Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-card__header .material-icons-round { font-size: 17px; color: var(--md-primary); }
+    .sidebar-card__body { padding: 16px 18px; }
+
+    /* QUESTION GRID */
+    .q-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+    .q-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 2px solid var(--md-outline);
+      color: var(--md-on-surface-2);
+      background: var(--md-surface-2);
+    }
+    .q-dot.current  { border-color: var(--md-primary); background: var(--md-primary); color: #fff; }
+    .q-dot.answered { border-color: var(--md-secondary); background: #E6F4EA; color: #137333; }
+    .q-dot.wrong-answered { border-color: var(--md-error); background: #FCE8E6; color: #C5221F; }
+    .q-dot:hover:not(.current) { border-color: var(--md-primary); }
+
+    /* LEGEND */
+    .legend { display: flex; flex-direction: column; gap: 8px; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--md-on-surface-2);
+    }
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .sw-unanswered { background: var(--md-surface-2); border: 2px solid var(--md-outline); }
+    .sw-current    { background: var(--md-primary); }
+    .sw-correct    { background: #E6F4EA; border: 2px solid var(--md-secondary); }
+    .sw-wrong      { background: #FCE8E6; border: 2px solid var(--md-error); }
+
+    /* Score mini */
+    .score-mini { text-align: center; padding: 8px 0; }
+    .score-mini__val {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--md-primary);
+      font-family: 'Open Sans', sans-serif;
+      line-height: 1;
+    }
+    .score-mini__label { font-size: 11px; color: var(--md-on-surface-3); margin-top: 4px; }
+
+    /* ========================
+       RESULTS SCREEN
+       ======================== */
+    .results-container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    .results-hero {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .results-emoji { font-size: 64px; margin-bottom: 16px; }
+    .results-hero__title {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--md-on-surface);
+      margin-bottom: 8px;
+    }
+    .results-hero__sub { font-size: 15px; color: var(--md-on-surface-2); }
+
+    /* Score ring */
+    .score-ring-wrap { display: flex; justify-content: center; margin: 32px 0 40px; }
+    .score-ring {
+      width: 160px;
+      height: 160px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .score-ring svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+    .score-ring__bg  { fill: none; stroke: var(--md-outline); stroke-width: 10; }
+    .score-ring__fg  { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1); }
+    .score-ring__inner { text-align: center; }
+    .score-ring__pct {
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--md-on-surface);
+      font-family: 'Open Sans', sans-serif;
+      line-height: 1;
+    }
+    .score-ring__label { font-size: 12px; color: var(--md-on-surface-3); margin-top: 4px; }
+
+    /* Result stats row */
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .result-stat-card {
+      background: var(--md-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--elevation-1);
+      padding: 20px;
+      text-align: center;
+    }
+    .result-stat-card__val {
+      font-size: 28px;
+      font-weight: 800;
+      font-family: 'Open Sans', sans-serif;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .result-stat-card__label { font-size: 12px; color: var(--md-on-surface-2); }
+    .val-correct { color: var(--md-secondary); }
+    .val-wrong   { color: var(--md-error); }
+    .val-skip    { color: var(--md-warning); }
+    .val-total   { color: var(--md-primary); }
+
+    /* Concept breakdown */
+    .concept-section { margin-bottom: 40px; }
+    .concept-section__title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--md-on-surface);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .concept-section__title .material-icons-round { color: var(--md-primary); font-size: 22px; }
+    .concept-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .concept-card {
+      background: var(--md-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--elevation-1);
+      padding: 20px;
+      border-left: 5px solid transparent;
+    }
+    .concept-card.strong  { border-left-color: var(--md-secondary); }
+    .concept-card.average { border-left-color: var(--md-warning); }
+    .concept-card.weak    { border-left-color: var(--md-error); }
+    .concept-card__name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--md-on-surface);
+      margin-bottom: 6px;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .concept-card__bar-wrap {
+      background: var(--md-outline);
+      border-radius: var(--radius-pill);
+      height: 6px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .concept-card__bar {
+      height: 100%;
+      border-radius: var(--radius-pill);
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+    .strong  .concept-card__bar  { background: var(--md-secondary); }
+    .average .concept-card__bar  { background: var(--md-warning); }
+    .weak    .concept-card__bar  { background: var(--md-error); }
+    .concept-card__meta { font-size: 12px; color: var(--md-on-surface-2); }
+    .concept-card__feedback {
+      font-size: 12px;
+      color: var(--md-on-surface-2);
+      margin-top: 8px;
+      line-height: 1.5;
+      font-style: italic;
+    }
+
+    /* Results Actions */
+    .results-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+    .btn-result {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: var(--radius-pill);
+      padding: 12px 28px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Roboto', sans-serif;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+    }
+    .btn-result.primary {
+      background: var(--md-primary);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(66,133,244,0.35);
+    }
+    .btn-result.primary:hover { background: var(--md-primary-dark); }
+    .btn-result.outline {
+      background: var(--md-surface);
+      color: var(--md-primary);
+      border: 2px solid var(--md-primary);
+    }
+    .btn-result.outline:hover { background: var(--md-primary-light); }
+    .btn-result .material-icons-round { font-size: 20px; }
+
+    /* Review table */
+    .review-section { margin-top: 40px; }
+    .review-section__title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--md-on-surface);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .review-section__title .material-icons-round { color: var(--md-primary); }
+    .review-list { display: flex; flex-direction: column; gap: 12px; }
+    .review-item {
+      background: var(--md-surface);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--elevation-1);
+      padding: 16px 18px;
+      border-left: 4px solid transparent;
+    }
+    .review-item.correct { border-left-color: var(--md-secondary); }
+    .review-item.wrong   { border-left-color: var(--md-error); }
+    .review-item.skipped { border-left-color: var(--md-warning); }
+    .review-item__q {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--md-on-surface);
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .review-item__detail { display: flex; gap: 16px; flex-wrap: wrap; }
+    .review-item__ans {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .review-item__ans .material-icons-round { font-size: 14px; }
+    .ans-correct { color: var(--md-secondary); }
+    .ans-wrong   { color: var(--md-error); }
+    .ans-skip    { color: var(--md-warning); }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .app-bar { padding: 0 16px; }
+      .home-container { padding: 32px 16px; }
+      .quiz-layout { padding: 16px; gap: 16px; }
+      .question-card__top { padding: 18px 18px 16px; }
+      .question-card__body { padding: 18px; }
+      .question-card__nav { padding: 12px 18px 20px; }
+      .results-container { padding: 24px 16px 60px; }
+      .app-bar__badge { display: none; }
+    }
+
+    /* Animations */
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeSlideIn 0.3s cubic-bezier(0.4,0,0.2,1) forwards; }
+  </style>
+</head>
+<body>
+
+<!-- ================================================
+     TOP APP BAR
+     ================================================ -->
+<header class="app-bar">
+  <a href="#" class="app-bar__logo" onclick="showHome(); return false;">
+    <div class="app-bar__logo-mark">
+      <span class="material-icons-round">storage</span>
+    </div>
+    <div>
+      <div class="app-bar__title">DB Systems 621</div>
+      <div class="app-bar__subtitle">Interactive Quiz Dashboard</div>
+    </div>
+  </a>
+  <div class="app-bar__spacer"></div>
+  <div class="app-bar__badge">
+    <span class="material-icons-round">school</span>
+    90 Questions · 3 Topics
+  </div>
+</header>
+
+<!-- ================================================
+     HOME SCREEN
+     ================================================ -->
+<div id="screen-home" class="screen active">
+  <div class="home-container">
+    <div class="home-hero">
+      <div class="home-hero__eyebrow">
+        <span class="material-icons-round" style="font-size:14px;">verified</span>
+        Course Assessment Portal
+      </div>
+      <h1 class="home-hero__title">
+        Database Systems <span>621</span><br>Quiz Dashboard
+      </h1>
+      <p class="home-hero__desc">
+        Select a topic below to begin a 30-question adaptive quiz. Track your progress, review every answer, and get concept-level feedback.
+      </p>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat-chip"><span class="dot dot-easy"></span> 10 Easy per topic</div>
+      <div class="stat-chip"><span class="dot dot-medium"></span> 10 Medium per topic</div>
+      <div class="stat-chip"><span class="dot dot-hard"></span> 10 Hard per topic</div>
+      <div class="stat-chip"><span class="material-icons-round" style="font-size:16px;color:var(--md-primary)">quiz</span> 30 Q per session</div>
+    </div>
+
+    <div class="topic-grid">
+      <!-- Topic 1 -->
+      <div class="topic-card" onclick="startQuiz(0)">
+        <div class="topic-card__header">
+          <div class="topic-card__icon-row">
+            <div class="topic-card__icon icon-blue">
+              <span class="material-icons-round">database</span>
+            </div>
+            <span class="topic-card__chap-badge">Chapters 1 &amp; 2</span>
+          </div>
+          <h2 class="topic-card__title">Database Systems Fundamentals</h2>
+          <p class="topic-card__desc">Data vs. information, DBMS advantages, file system flaws, data models, abstraction levels, and the 5-part database environment.</p>
+        </div>
+        <div class="topic-card__footer">
+          <div class="diff-pills">
+            <span class="diff-pill easy"><span class="material-icons-round">circle</span>10 Easy</span>
+            <span class="diff-pill medium"><span class="material-icons-round">circle</span>10 Medium</span>
+            <span class="diff-pill hard"><span class="material-icons-round">circle</span>10 Hard</span>
+          </div>
+          <div class="topic-card__cta">
+            <span class="topic-card__q-count">30 questions</span>
+            <button class="btn-start">Start Quiz <span class="material-icons-round">arrow_forward</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Topic 2 -->
+      <div class="topic-card" onclick="startQuiz(1)">
+        <div class="topic-card__header">
+          <div class="topic-card__icon-row">
+            <div class="topic-card__icon icon-green">
+              <span class="material-icons-round">table_chart</span>
+            </div>
+            <span class="topic-card__chap-badge">Chapter 3</span>
+          </div>
+          <h2 class="topic-card__title">The Relational Database Model</h2>
+          <p class="topic-card__desc">Tables, keys (primary, foreign, composite), functional dependence, entity &amp; referential integrity, and implementing relationships.</p>
+        </div>
+        <div class="topic-card__footer">
+          <div class="diff-pills">
+            <span class="diff-pill easy"><span class="material-icons-round">circle</span>10 Easy</span>
+            <span class="diff-pill medium"><span class="material-icons-round">circle</span>10 Medium</span>
+            <span class="diff-pill hard"><span class="material-icons-round">circle</span>10 Hard</span>
+          </div>
+          <div class="topic-card__cta">
+            <span class="topic-card__q-count">30 questions</span>
+            <button class="btn-start">Start Quiz <span class="material-icons-round">arrow_forward</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Topic 3 -->
+      <div class="topic-card" onclick="startQuiz(2)">
+        <div class="topic-card__header">
+          <div class="topic-card__icon-row">
+            <div class="topic-card__icon icon-purple">
+              <span class="material-icons-round">account_tree</span>
+            </div>
+            <span class="topic-card__chap-badge">Chapter 4</span>
+          </div>
+          <h2 class="topic-card__title">Entity Relationship (ER) Modeling</h2>
+          <p class="topic-card__desc">Entity types, attribute classifications, connectivity, cardinality, weak entities, strong/weak relationships, and unary/ternary relationships.</p>
+        </div>
+        <div class="topic-card__footer">
+          <div class="diff-pills">
+            <span class="diff-pill easy"><span class="material-icons-round">circle</span>10 Easy</span>
+            <span class="diff-pill medium"><span class="material-icons-round">circle</span>10 Medium</span>
+            <span class="diff-pill hard"><span class="material-icons-round">circle</span>10 Hard</span>
+          </div>
+          <div class="topic-card__cta">
+            <span class="topic-card__q-count">30 questions</span>
+            <button class="btn-start">Start Quiz <span class="material-icons-round">arrow_forward</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================
+     QUIZ SCREEN
+     ================================================ -->
+<div id="screen-quiz" class="screen">
+  <!-- Quiz Header Strip -->
+  <div class="quiz-header">
+    <div class="quiz-header__inner">
+      <button class="quiz-header__back" onclick="confirmHome()">
+        <span class="material-icons-round">arrow_back</span> Home
+      </button>
+      <div class="quiz-header__info">
+        <div class="quiz-header__topic" id="quiz-topic-label">Topic 1</div>
+        <div class="quiz-header__meta" id="quiz-meta-label">Question 1 of 30</div>
+      </div>
+      <div class="quiz-header__progress-wrap">
+        <div class="progress-label">
+          <span id="progress-answered">0 answered</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-bar__fill" id="progress-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="quiz-layout">
+    <!-- Main Question Area -->
+    <div class="quiz-main">
+      <div class="question-card animate-in" id="question-card">
+        <!-- Top: question num + text -->
+        <div class="question-card__top">
+          <div class="question-card__num-badge" id="q-num-badge">1</div>
+          <div class="question-card__meta">
+            <div class="question-card__tags" id="q-tags"></div>
+            <div class="question-card__text" id="q-text">Loading question…</div>
+          </div>
+        </div>
+
+        <!-- Body: options -->
+        <div class="question-card__body">
+          <div class="options-list" id="options-list"></div>
+          <div class="feedback-box" id="feedback-box"></div>
+        </div>
+
+        <!-- Nav -->
+        <div class="question-card__nav">
+          <button class="btn-nav" id="btn-prev" onclick="navigate(-1)">
+            <span class="material-icons-round">arrow_back</span> Previous
+          </button>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-nav primary" id="btn-next" onclick="navigate(1)">
+              Next <span class="material-icons-round">arrow_forward</span>
+            </button>
+            <button class="btn-nav submit" id="btn-submit" onclick="submitQuiz()" style="display:none">
+              <span class="material-icons-round">check_circle</span> Submit Quiz
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="quiz-sidebar">
+      <!-- Live score -->
+      <div class="sidebar-card">
+        <div class="sidebar-card__header">
+          <span class="material-icons-round">bar_chart</span> Live Score
+        </div>
+        <div class="sidebar-card__body">
+          <div class="score-mini">
+            <div class="score-mini__val" id="live-score">0/0</div>
+            <div class="score-mini__label">Correct / Answered</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Grid -->
+      <div class="sidebar-card">
+        <div class="sidebar-card__header">
+          <span class="material-icons-round">grid_view</span> Question Navigator
+        </div>
+        <div class="sidebar-card__body">
+          <div class="q-grid" id="q-grid"></div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="sidebar-card">
+        <div class="sidebar-card__header">
+          <span class="material-icons-round">info</span> Legend
+        </div>
+        <div class="sidebar-card__body">
+          <div class="legend">
+            <div class="legend-item"><div class="legend-swatch sw-unanswered"></div> Unanswered</div>
+            <div class="legend-item"><div class="legend-swatch sw-current"></div> Current</div>
+            <div class="legend-item"><div class="legend-swatch sw-correct"></div> Correct</div>
+            <div class="legend-item"><div class="legend-swatch sw-wrong"></div> Incorrect</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ================================================
+     RESULTS SCREEN
+     ================================================ -->
+<div id="screen-results" class="screen">
+  <div class="results-container">
+    <div class="results-hero">
+      <div class="results-emoji" id="results-emoji">🎉</div>
+      <h1 class="results-hero__title" id="results-title">Quiz Complete!</h1>
+      <p class="results-hero__sub" id="results-sub">Here is your performance summary.</p>
+    </div>
+
+    <!-- Score Ring -->
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg viewBox="0 0 160 160" width="160" height="160">
+          <circle class="score-ring__bg" cx="80" cy="80" r="70"/>
+          <circle class="score-ring__fg" id="score-ring-fg" cx="80" cy="80" r="70"
+            stroke-dasharray="439.82"
+            stroke-dashoffset="439.82"/>
+        </svg>
+        <div class="score-ring__inner">
+          <div class="score-ring__pct" id="score-pct">0%</div>
+          <div class="score-ring__label">Score</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="result-stats" id="result-stats"></div>
+
+    <!-- Concept Breakdown -->
+    <div class="concept-section">
+      <div class="concept-section__title">
+        <span class="material-icons-round">psychology</span>
+        Concept-Based Performance Breakdown
+      </div>
+      <div class="concept-cards" id="concept-cards"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="results-actions">
+      <button class="btn-result primary" onclick="retakeQuiz()">
+        <span class="material-icons-round">refresh</span> Retake This Quiz
+      </button>
+      <button class="btn-result outline" onclick="showHome()">
+        <span class="material-icons-round">home</span> Choose Another Topic
+      </button>
+    </div>
+
+    <!-- Full Review -->
+    <div class="review-section">
+      <div class="review-section__title">
+        <span class="material-icons-round">rate_review</span>
+        Full Question Review
+      </div>
+      <div class="review-list" id="review-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================
+     JAVASCRIPT
+     ================================================ -->
+<script>
+/* ======================================================
+   QUESTION BANK
+   90 questions across 3 topics, 30 each, 10 per difficulty.
+   Each question: { text, options[4], answer(0-based index), concept, difficulty }
+   ====================================================== */
+
+const TOPICS = [
+  {
+    id: 0,
+    title: "Database Systems Fundamentals",
+    subtitle: "Chapters 1 & 2 — Core concepts, evolution of data models",
+    icon: "database",
+    color: "#4285F4"
+  },
+  {
+    id: 1,
+    title: "The Relational Database Model",
+    subtitle: "Chapter 3 — Tables, keys, integrity rules, relationships",
+    icon: "table_chart",
+    color: "#34A853"
+  },
+  {
+    id: 2,
+    title: "Entity Relationship (ER) Modeling",
+    subtitle: "Chapter 4 — ERDs, attributes, connectivity, cardinality",
+    icon: "account_tree",
+    color: "#9334EA"
+  }
+];
+
+const QUESTIONS = [
+
+  // ============================================================
+  // TOPIC 0 — DATABASE SYSTEMS FUNDAMENTALS (Ch 1 & 2)
+  // ============================================================
+
+  // --- EASY (0–9) ---
+  {
+    topic: 0, difficulty: "easy",
+    concept: "Data vs. Information",
+    text: "Which of the following best defines 'data' in the context of database systems?",
+    options: [
+      "Processed facts that have been given context and meaning",
+      "Raw, unprocessed facts that have not yet been given meaning",
+      "A collection of programs that manage database structure",
+      "The metadata describing the characteristics of stored records"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "easy",
+    concept: "Data vs. Information",
+    text: "A temperature reading of '105' stored in a file is an example of:",
+    options: [
+      "Information, because it reveals a fever",
+      "Knowledge, because it can be acted upon",
+      "Data, because it is a raw fact without context",
+      "Metadata, because it describes a physical measurement"
+    ],
+    answer: 2
+  },
+  {
+    topic: 0, difficulty: "easy",
+    concept: "Metadata",
+    text: "Metadata is best described as:",
+    options: [
+      "Data that has been processed to produce reports",
+      "Data about data — describing characteristics and relationships of the database's data",
+      "The physical storage format used by the DBMS on disk",
+      "Redundant copies of data stored for backup purposes"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "easy",
+    concept: "DBMS Definition",
+    text: "A Database Management System (DBMS) is primarily defined as:",
+    options: [
+      "A spreadsheet application for organizing data into rows and columns",
+      "A collection of programs that manages the database structure and controls access to data",
+      "A hardware device that stores large volumes of structured data",
+      "A network protocol for transmitting data between servers"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "easy",
+    concept: "5 Parts of a Database System",
+    text: "Which of the following correctly lists the five major parts of a database system environment?",
+    options: [
+      "Hardware, Software, People, Procedures, Data",
+      "Server, Client, Network, Firewall, Application",
+      "Tables, Queries, Forms, Reports, Modules",
+      "Input, Process, Output, Storage, Feedback"
+    ],
+    answer: 0
+  },
+  {
+    topic: 0, difficulty: "easy",
+    concept: "Database Types",
+    text: "A database that supports many users simultaneously who access data from a shared source is called a:",
+    options: [
+      "Single-user database",
+      "Desktop database",
+      "Multiuser database",
+      "Personal database"
+    ],
+    answer: 2
+  },
+  {
+    topic: 0, difficulty: "easy",
+    concept: "Database Types",
+    text: "An enterprise database is best described as a:",
+    options: [
+      "Database designed for personal use on a single workstation",
+      "Large-scale database that supports an entire organization's operations",
+      "A database stored entirely in cloud memory",
+      "A database structured using only hierarchical data models"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "easy",
+    concept: "Relational Model",
+    text: "The Relational Model was introduced by which computer scientist?",
+    options: [
+      "Charles Bachman",
+      "James Martin",
+      "E.F. Codd",
+      "Peter Chen"
+    ],
+    answer: 2
+  },
+  {
+    topic: 0, difficulty: "easy",
+    concept: "Basic Building Blocks",
+    text: "Which of the following are the four basic building blocks of all data models?",
+    options: [
+      "Tables, Rows, Columns, Indexes",
+      "Entities, Attributes, Relationships, Constraints",
+      "Classes, Objects, Methods, Inheritance",
+      "Schemas, Instances, Queries, Reports"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "easy",
+    concept: "Data Redundancy",
+    text: "Data redundancy refers to:",
+    options: [
+      "Encrypting data to prevent unauthorized access",
+      "Backing up data to multiple geographic locations",
+      "Storing the same data in multiple different places, causing inconsistency",
+      "Indexing data fields to speed up query performance"
+    ],
+    answer: 2
+  },
+
+  // --- MEDIUM (10–19) ---
+  {
+    topic: 0, difficulty: "medium",
+    concept: "File Systems vs. DBMS",
+    text: "Which problem with traditional file systems occurs when the same customer's address is stored in both a billing file and a shipping file, and the billing file is updated but the shipping file is not?",
+    options: [
+      "Structural dependence",
+      "Data inconsistency caused by data redundancy",
+      "Physical data independence",
+      "An ad hoc query failure"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "medium",
+    concept: "Data Anomalies",
+    text: "An 'insertion anomaly' in a file system occurs when:",
+    options: [
+      "Deleting one record accidentally removes related data that should be retained",
+      "You cannot add data about a new entity because related data for another entity does not yet exist",
+      "Updating a field in one record creates an inconsistency with the same field in another record",
+      "A query returns duplicate rows due to redundant data storage"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "medium",
+    concept: "Data Anomalies",
+    text: "A deletion anomaly occurs when:",
+    options: [
+      "Inserting a new record causes duplicate primary keys",
+      "Removing a record causes unintended loss of other important data",
+      "An update to one table is not propagated to a related table",
+      "A query fails because the index structure is corrupted"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "medium",
+    concept: "Structural Dependence",
+    text: "In traditional file systems, 'structural dependence' means that:",
+    options: [
+      "Data can be accessed independently of its physical storage format",
+      "All programs accessing a file must be rewritten whenever the file structure changes",
+      "The DBMS automatically restructures files when new attributes are added",
+      "Database tables must mirror the physical structure of the hard disk"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "medium",
+    concept: "Database Types",
+    text: "Which pair correctly contrasts operational and analytical databases?",
+    options: [
+      "Operational databases support daily transactions; analytical databases support decision-making from historical data",
+      "Operational databases are read-only; analytical databases support real-time write operations",
+      "Operational databases use NoSQL; analytical databases always use the relational model",
+      "Operational databases are distributed; analytical databases are always centralized"
+    ],
+    answer: 0
+  },
+  {
+    topic: 0, difficulty: "medium",
+    concept: "Degrees of Data Abstraction",
+    text: "The four levels of data abstraction from highest (user-facing) to lowest (physical storage) are:",
+    options: [
+      "Physical → Internal → Conceptual → External",
+      "External → Conceptual → Internal → Physical",
+      "Conceptual → External → Physical → Internal",
+      "Internal → External → Conceptual → Physical"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "medium",
+    concept: "Business Rules",
+    text: "In database design, business rules translate as follows: nouns typically become ___ and verbs typically become ___.",
+    options: [
+      "Attributes; Entities",
+      "Constraints; Attributes",
+      "Entities or Attributes; Relationships",
+      "Relationships; Constraints"
+    ],
+    answer: 2
+  },
+  {
+    topic: 0, difficulty: "medium",
+    concept: "Data Models Evolution",
+    text: "Which of the following best describes the key limitation of the Hierarchical Data Model?",
+    options: [
+      "It could not represent any form of parent-child relationships",
+      "Data access was structurally dependent, and it could not easily represent many-to-many relationships",
+      "It relied exclusively on object-oriented programming concepts",
+      "It required all data to be stored in two-dimensional tables"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "medium",
+    concept: "NoSQL & Big Data",
+    text: "The 'three Vs' that characterize Big Data are:",
+    options: [
+      "Validity, Visibility, Velocity",
+      "Volume, Velocity, Variety",
+      "Volume, Veracity, Virtualization",
+      "Variety, Viability, Version"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "medium",
+    concept: "Cloud & Distributed Databases",
+    text: "A distributed database differs from a centralized database in that:",
+    options: [
+      "A distributed database stores all data on a single server for security",
+      "A distributed database stores data across multiple physical locations connected by a network",
+      "A distributed database can only be accessed by one user at a time",
+      "A distributed database does not support SQL query languages"
+    ],
+    answer: 1
+  },
+
+  // --- HARD (20–29) ---
+  {
+    topic: 0, difficulty: "hard",
+    concept: "Conceptual vs. Internal Model",
+    text: "A database designer has completed a global blueprint of the entire database that is independent of both hardware and software. Which abstraction level does this represent?",
+    options: [
+      "External Model — it captures the end user's view",
+      "Conceptual Model — it represents the global, implementation-independent view",
+      "Internal Model — it shows how the DBMS organizes data",
+      "Physical Model — it defines how data is stored on disk"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "hard",
+    concept: "DBA Responsibilities",
+    text: "Which scenario falls squarely within the responsibility of a Database Administrator (DBA)?",
+    options: [
+      "Writing the business logic in the front-end application layer",
+      "Designing the user interface for data entry forms",
+      "Managing database security, backup strategies, and performance tuning",
+      "Configuring the operating system kernel for optimal throughput"
+    ],
+    answer: 2
+  },
+  {
+    topic: 0, difficulty: "hard",
+    concept: "Semistructured Data",
+    text: "A JSON document that contains optional fields — some records have a 'middleName' field and some do not — is an example of:",
+    options: [
+      "Structured data, because it uses a defined schema",
+      "Unstructured data, because it cannot be queried",
+      "Semistructured data, because it has some self-describing tags but no rigid schema",
+      "Metadata, because it describes the shape of other data"
+    ],
+    answer: 2
+  },
+  {
+    topic: 0, difficulty: "hard",
+    concept: "Data Anomalies",
+    text: "A university stores course information only within the ENROLLMENT table. When the last student drops a course, the entire course record — including its title and credit hours — is deleted. This illustrates which anomaly?",
+    options: [
+      "Update anomaly",
+      "Insertion anomaly",
+      "Deletion anomaly",
+      "Referential anomaly"
+    ],
+    answer: 2
+  },
+  {
+    topic: 0, difficulty: "hard",
+    concept: "Logical vs. Physical Independence",
+    text: "A DBMS allows a programmer to write queries using table and column names without knowing how data is stored on disk. This capability is called:",
+    options: [
+      "Structural dependence",
+      "Physical data independence",
+      "Conceptual data abstraction",
+      "Logical normalization"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "hard",
+    concept: "Object-Oriented Model",
+    text: "In the Object-Oriented Data Model (OODM), a 'GraduateStudent' class automatically gains all attributes and methods of its parent 'Student' class. This feature is called:",
+    options: [
+      "Encapsulation",
+      "Polymorphism",
+      "Inheritance",
+      "Composition"
+    ],
+    answer: 2
+  },
+  {
+    topic: 0, difficulty: "hard",
+    concept: "Ad Hoc Queries",
+    text: "A manager needs a one-time report showing all employees who joined in Q3 2023 and have a salary above $70,000. This is best described as:",
+    options: [
+      "A routine operational report generated by a pre-programmed procedure",
+      "An ad hoc query — a non-standard, unplanned query created to answer a specific question",
+      "An analytical OLAP cube query",
+      "A batch job scheduled for nightly execution"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "hard",
+    concept: "File Systems vs. DBMS",
+    text: "Company A stores customer data in a flat-file system. The sales department, billing department, and support department each maintain their own separate customer files. Which two DBMS advantages would most directly address this situation?",
+    options: [
+      "Faster read speeds and better graphical interfaces",
+      "Improved data sharing across departments and minimized data inconsistency",
+      "Better hardware compatibility and cloud integration",
+      "Support for unstructured data and real-time analytics"
+    ],
+    answer: 1
+  },
+  {
+    topic: 0, difficulty: "hard",
+    concept: "ERD Notations",
+    text: "A database designer is presenting a conceptual ER diagram to non-technical stakeholders. Which of the following notation comparisons is most accurate?",
+    options: [
+      "Chen notation uses rectangles for entities and diamonds for relationships; Crow's Foot uses special line-end symbols for cardinality",
+      "UML class diagrams cannot represent database relationships at all",
+      "Crow's Foot notation is exclusively used for object-oriented models",
+      "Chen and Crow's Foot notations are functionally identical and interchangeable"
+    ],
+    answer: 0
+  },
+  {
+    topic: 0, difficulty: "hard",
+    concept: "NoSQL & Big Data",
+    text: "A streaming platform must ingest millions of events per second from users worldwide, with records that vary in structure between different event types. The traditional relational model struggles here because of:",
+    options: [
+      "Inability to perform aggregate functions like SUM or COUNT",
+      "Lack of support for primary keys and foreign keys",
+      "Scalability limitations under high Volume, Velocity, and schema Variety of Big Data",
+      "The relational model's exclusive use of hierarchical data structures"
+    ],
+    answer: 2
+  },
+
+  // ============================================================
+  // TOPIC 1 — THE RELATIONAL DATABASE MODEL (Ch 3)
+  // ============================================================
+
+  // --- EASY (0–9) ---
+  {
+    topic: 1, difficulty: "easy",
+    concept: "Relational Table Basics",
+    text: "In a relational database, a row in a table is formally called a:",
+    options: [
+      "Column",
+      "Attribute",
+      "Tuple",
+      "Schema"
+    ],
+    answer: 2
+  },
+  {
+    topic: 1, difficulty: "easy",
+    concept: "Primary Key",
+    text: "A primary key (PK) is an attribute (or combination of attributes) that:",
+    options: [
+      "Can contain null values to handle missing data",
+      "Uniquely identifies each row in a table",
+      "Links two tables by referencing a foreign key",
+      "Stores calculated values derived from other attributes"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "easy",
+    concept: "Foreign Key",
+    text: "A foreign key (FK) is best defined as:",
+    options: [
+      "An attribute that uniquely identifies each row in its own table",
+      "A composite key made up of more than one attribute",
+      "An attribute in one table that references the primary key of another table",
+      "A key used exclusively for sorting and indexing purposes"
+    ],
+    answer: 2
+  },
+  {
+    topic: 1, difficulty: "easy",
+    concept: "Entity Integrity",
+    text: "Entity integrity requires that:",
+    options: [
+      "Foreign key values must match existing primary key values in the referenced table",
+      "All primary key entries are unique and no part of a primary key may be null",
+      "Every table must have at least one composite key",
+      "All attributes must have a defined domain with no null values allowed"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "easy",
+    concept: "Referential Integrity",
+    text: "Referential integrity states that a foreign key value must:",
+    options: [
+      "Always be null to indicate an optional relationship",
+      "Match a value in the primary key of the same table",
+      "Either be null or match an existing primary key value in the referenced table",
+      "Be unique within its own table, similar to a primary key"
+    ],
+    answer: 2
+  },
+  {
+    topic: 1, difficulty: "easy",
+    concept: "Composite Key",
+    text: "A composite key is defined as:",
+    options: [
+      "A key that references another table's primary key",
+      "A key composed of more than one attribute to uniquely identify a row",
+      "A key automatically generated by the DBMS",
+      "A key used for full-text search indexing"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "easy",
+    concept: "Null Values",
+    text: "In relational databases, a 'null' value means:",
+    options: [
+      "The value is zero (0)",
+      "The value is an empty string ('')",
+      "The value is absent, unknown, or not applicable",
+      "The value has been deleted from the database"
+    ],
+    answer: 2
+  },
+  {
+    topic: 1, difficulty: "easy",
+    concept: "Secondary Key",
+    text: "A secondary key in a relational database is primarily used for:",
+    options: [
+      "Enforcing referential integrity between tables",
+      "Uniquely identifying each row as an alternative to the primary key",
+      "Providing a non-unique field used for data retrieval and searching",
+      "Creating a composite key from multiple attributes"
+    ],
+    answer: 2
+  },
+  {
+    topic: 1, difficulty: "easy",
+    concept: "Data Dictionary",
+    text: "A data dictionary serves as:",
+    options: [
+      "A user manual for operating the DBMS software",
+      "A catalog of metadata describing all database objects, attributes, and their relationships",
+      "A physical storage map of where data is located on disk",
+      "A list of all SQL queries executed in the last 24 hours"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "easy",
+    concept: "Logical vs. Physical View",
+    text: "Viewing data 'logically' rather than 'physically' means:",
+    options: [
+      "The user sees data as it is physically stored on disk sectors",
+      "The user works with data through tables and relationships, independent of physical storage details",
+      "Queries must be written in machine code to access raw data blocks",
+      "Data can only be viewed using graphical reports, not SQL"
+    ],
+    answer: 1
+  },
+
+  // --- MEDIUM (10–19) ---
+  {
+    topic: 1, difficulty: "medium",
+    concept: "Functional Dependence",
+    text: "In the table EMPLOYEE(EmpID, EmpName, DeptID, DeptName), if DeptName is determined by DeptID alone (not EmpID), this is an example of:",
+    options: [
+      "Full functional dependence — DeptName depends on the entire composite key",
+      "Partial functional dependence — DeptName depends on only part of the composite key",
+      "Transitive dependence — DeptName depends on a non-key attribute",
+      "Entity integrity violation — DeptName should be a primary key"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "medium",
+    concept: "Candidate vs. Primary Key",
+    text: "In a STUDENT table, both StudentID and NationalID can uniquely identify a student. Both are therefore called ___; the designer chooses one as the ___.",
+    options: [
+      "Foreign keys; superkey",
+      "Superkeys; composite key",
+      "Candidate keys; primary key",
+      "Secondary keys; alternate key"
+    ],
+    answer: 2
+  },
+  {
+    topic: 1, difficulty: "medium",
+    concept: "Homonyms and Synonyms",
+    text: "A database uses 'CustID' in the Orders table and 'ClientNumber' in the Contracts table to refer to the same thing. This naming problem is called a:",
+    options: [
+      "Homonym — same word, different meaning",
+      "Synonym — different words, same meaning",
+      "Transitive dependency — attribute depending on another non-key attribute",
+      "Null violation — the attribute has no defined domain"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "medium",
+    concept: "1:M Relationship Implementation",
+    text: "When implementing a one-to-many (1:M) relationship between DEPARTMENT and EMPLOYEE, the foreign key is placed in:",
+    options: [
+      "The DEPARTMENT table (the 'one' side)",
+      "Both tables simultaneously",
+      "A new bridge table created between them",
+      "The EMPLOYEE table (the 'many' side)"
+    ],
+    answer: 3
+  },
+  {
+    topic: 1, difficulty: "medium",
+    concept: "M:N Relationship Implementation",
+    text: "Why can a many-to-many (M:N) relationship NOT be directly implemented in a relational database?",
+    options: [
+      "Because relational databases do not support foreign key constraints",
+      "Because it would require placing multi-valued foreign keys in a column, violating first normal form",
+      "Because M:N relationships can only exist in hierarchical models",
+      "Because both tables would need identical primary keys"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "medium",
+    concept: "Bridge/Associative Entity",
+    text: "To resolve a many-to-many relationship between STUDENT and COURSE, a designer creates an ENROLLMENT table containing (StudentID, CourseID). The ENROLLMENT table is called a:",
+    options: [
+      "Superkey table",
+      "Secondary table",
+      "Composite (bridge/associative/linking) entity",
+      "Weak entity with a partial primary key"
+    ],
+    answer: 2
+  },
+  {
+    topic: 1, difficulty: "medium",
+    concept: "Superkey",
+    text: "A superkey is defined as:",
+    options: [
+      "The minimum set of attributes that uniquely identifies a row",
+      "Any attribute or set of attributes that can uniquely identify a row, possibly with extra attributes",
+      "A foreign key that references more than one primary key",
+      "A key automatically generated to replace a natural primary key"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "medium",
+    concept: "Index",
+    text: "A database index improves query performance primarily by:",
+    options: [
+      "Removing duplicate rows from a table",
+      "Enforcing referential integrity between tables",
+      "Providing a fast lookup structure that allows the DBMS to find rows without scanning the entire table",
+      "Compressing table data to reduce disk storage usage"
+    ],
+    answer: 2
+  },
+  {
+    topic: 1, difficulty: "medium",
+    concept: "1:1 Relationship Implementation",
+    text: "When implementing a one-to-one (1:1) relationship between PERSON and PASSPORT, the foreign key:",
+    options: [
+      "Must always go in the PERSON table regardless of participation",
+      "Should go in the table on the mandatory participation side",
+      "Is placed in a separate bridge table",
+      "Is placed in both tables simultaneously to maintain symmetry"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "medium",
+    concept: "Relational Table Characteristics",
+    text: "Which of the following is NOT a characteristic of a properly defined relational table?",
+    options: [
+      "Each row in the table is unique",
+      "Column entries are of the same kind (same domain)",
+      "The order of rows is significant for query results",
+      "Each column has a unique name within the table"
+    ],
+    answer: 2
+  },
+
+  // --- HARD (20–29) ---
+  {
+    topic: 1, difficulty: "hard",
+    concept: "Referential Integrity",
+    text: "An ORDER record contains a CustomerID value of 9999. However, no CUSTOMER record with CustomerID = 9999 exists in the CUSTOMER table. This violates:",
+    options: [
+      "Entity integrity — CustomerID must be unique in the ORDER table",
+      "Referential integrity — the foreign key value has no matching primary key",
+      "Domain integrity — 9999 is outside the permitted value range",
+      "Full functional dependence — CustomerID does not determine all ORDER attributes"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "hard",
+    concept: "Entity Integrity",
+    text: "A developer attempts to insert a new PRODUCT row where the ProductID (primary key) is NULL. The DBMS rejects the operation. This is an enforcement of:",
+    options: [
+      "Referential integrity",
+      "Domain integrity",
+      "Entity integrity",
+      "Structural independence"
+    ],
+    answer: 2
+  },
+  {
+    topic: 1, difficulty: "hard",
+    concept: "Functional Dependence",
+    text: "In an ORDER_LINE table with composite key (OrderID, ProductID), if UnitPrice depends only on ProductID and not on the full composite key, this violates which concept?",
+    options: [
+      "Entity integrity",
+      "Full functional dependence",
+      "Referential integrity",
+      "Superkey definition"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "hard",
+    concept: "Referential Integrity",
+    text: "A database administrator deletes a DEPARTMENT record. There are EMPLOYEE records that reference this department via a foreign key. Which referential integrity action would preserve employee records while nullifying the link?",
+    options: [
+      "CASCADE DELETE — delete all employee records that referenced the department",
+      "RESTRICT — prevent the delete until all employee records are reassigned",
+      "SET NULL — allow the delete and set the DeptID foreign key in employee records to NULL",
+      "NO ACTION — permanently break the relationship without any cascade effect"
+    ],
+    answer: 2
+  },
+  {
+    topic: 1, difficulty: "hard",
+    concept: "Homonyms and Synonyms",
+    text: "The field 'address' in the CUSTOMER table refers to a customer's shipping address, while 'address' in the SUPPLIER table refers to headquarters location. This naming ambiguity is a:",
+    options: [
+      "Synonym — two names for the same concept",
+      "Homonym — the same name used for different concepts in different contexts",
+      "Transitive dependency — one attribute indirectly determines another",
+      "Null violation — the field domain is undefined"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "hard",
+    concept: "Composite Bridge Entity",
+    text: "The bridge entity ENROLLMENT(StudentID, CourseID, EnrollDate, Grade) resolves a STUDENT–COURSE M:N relationship. EnrollDate and Grade are considered:",
+    options: [
+      "Foreign keys that must reference a third table",
+      "Attributes of the relationship itself, stored in the bridge entity",
+      "Derived attributes calculated from StudentID and CourseID",
+      "Violations of entity integrity since they are not part of the primary key"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "hard",
+    concept: "Determination",
+    text: "The notation A → B in database theory means:",
+    options: [
+      "A is the foreign key that references B",
+      "The value of A determines the value of B (functional dependence)",
+      "A and B together form a composite primary key",
+      "B is a superkey that includes attribute A"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "hard",
+    concept: "Index",
+    text: "A query frequently searches the ORDERS table by CustomerID, which is not the primary key. A DBA creates an index on CustomerID. What is the most accurate description of the trade-off?",
+    options: [
+      "The index speeds up SELECT queries on CustomerID but may slow down INSERT/UPDATE/DELETE operations due to index maintenance overhead",
+      "The index permanently locks the CustomerID column from updates",
+      "The index removes the need for a primary key on the ORDERS table",
+      "The index enforces referential integrity between ORDERS and CUSTOMER"
+    ],
+    answer: 0
+  },
+  {
+    topic: 1, difficulty: "hard",
+    concept: "Referential Integrity",
+    text: "A SALES table has a foreign key SalesPersonID referencing EMPLOYEE. A new sales record is inserted where SalesPersonID is NULL, representing an online sale with no assigned salesperson. Is this a referential integrity violation?",
+    options: [
+      "Yes — all foreign keys must match an existing primary key",
+      "No — a NULL foreign key is permitted by referential integrity rules; it indicates no relationship",
+      "Yes — NULL values are only allowed in primary keys",
+      "No — because SalesPersonID is a secondary key, integrity rules do not apply"
+    ],
+    answer: 1
+  },
+  {
+    topic: 1, difficulty: "hard",
+    concept: "Logical vs. Physical View",
+    text: "A database user queries: SELECT * FROM CUSTOMERS WHERE City = 'Lagos'. The user has no knowledge of which disk block, file, or physical index is used. This is an example of:",
+    options: [
+      "Structural dependence — the query depends on the physical file structure",
+      "The internal model — the user is programming at the DBMS engine level",
+      "Logical data independence — the user interacts with a logical view, shielded from physical details",
+      "The physical model — the query maps directly to storage addresses"
+    ],
+    answer: 2
+  },
+
+  // ============================================================
+  // TOPIC 2 — ENTITY RELATIONSHIP (ER) MODELING (Ch 4)
+  // ============================================================
+
+  // --- EASY (0–9) ---
+  {
+    topic: 2, difficulty: "easy",
+    concept: "Entity Set vs. Instance",
+    text: "The distinction between an 'entity set' and an 'entity instance' is:",
+    options: [
+      "An entity set is a single record; an entity instance is the collection of all records",
+      "An entity set is the collection of all entities of the same type; an entity instance is one specific entity",
+      "They are synonymous terms used interchangeably in ER modeling",
+      "An entity set defines attributes; an entity instance defines relationships"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "easy",
+    concept: "Required vs. Optional Attribute",
+    text: "An attribute that MUST have a value for every entity instance is called a:",
+    options: [
+      "Derived attribute",
+      "Optional attribute",
+      "Multivalued attribute",
+      "Required attribute"
+    ],
+    answer: 3
+  },
+  {
+    topic: 2, difficulty: "easy",
+    concept: "Attribute Domain",
+    text: "An attribute domain defines:",
+    options: [
+      "The physical storage format of the attribute on disk",
+      "The set of all possible values an attribute can legally hold",
+      "The relationship between the attribute and its parent entity",
+      "The index structure used to speed up searches on the attribute"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "easy",
+    concept: "Composite Attribute",
+    text: "Which of the following is the best example of a composite attribute?",
+    options: [
+      "Age, derived from Date of Birth",
+      "PhoneNumber, which holds multiple phone numbers per person",
+      "Address, composed of Street, City, State, and ZipCode",
+      "EmployeeID, which uniquely identifies each employee"
+    ],
+    answer: 2
+  },
+  {
+    topic: 2, difficulty: "easy",
+    concept: "Multivalued Attribute",
+    text: "An employee can hold multiple college degrees (B.Sc., M.Sc., Ph.D.). The 'Degree' attribute is therefore:",
+    options: [
+      "A derived attribute",
+      "A simple single-valued attribute",
+      "A multivalued attribute",
+      "A composite attribute"
+    ],
+    answer: 2
+  },
+  {
+    topic: 2, difficulty: "easy",
+    concept: "Derived Attribute",
+    text: "An 'Age' attribute that is calculated from 'DateOfBirth' is called a:",
+    options: [
+      "Required attribute",
+      "Composite attribute",
+      "Derived attribute",
+      "Multivalued attribute"
+    ],
+    answer: 2
+  },
+  {
+    topic: 2, difficulty: "easy",
+    concept: "Connectivity",
+    text: "The term 'connectivity' in ER modeling refers to:",
+    options: [
+      "The physical network speed between database servers",
+      "The classification of a relationship as 1:1, 1:M, or M:N",
+      "The minimum number of entity instances required in a relationship",
+      "Whether an entity's participation in a relationship is optional or mandatory"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "easy",
+    concept: "Strong vs. Weak Entity",
+    text: "A 'weak entity' in ER modeling is one that:",
+    options: [
+      "Has fewer attributes than other entities in the model",
+      "Cannot be uniquely identified without depending on a related parent entity",
+      "Has an optional relationship with all related entities",
+      "Uses only derived attributes to define its characteristics"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "easy",
+    concept: "Existence Dependence",
+    text: "Existence dependence means that:",
+    options: [
+      "An entity's primary key must be a composite key",
+      "An entity can only exist in the database if a related entity also exists",
+      "All attributes of an entity must have values (no nulls permitted)",
+      "A relationship must have at least one mandatory participant"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "easy",
+    concept: "Unary Relationship",
+    text: "A unary relationship (also called a recursive relationship) is one that:",
+    options: [
+      "Involves exactly two different entity types",
+      "Involves three or more entity types simultaneously",
+      "Exists between instances of the same entity type",
+      "Can only be of 1:1 connectivity type"
+    ],
+    answer: 2
+  },
+
+  // --- MEDIUM (10–19) ---
+  {
+    topic: 2, difficulty: "medium",
+    concept: "Cardinality",
+    text: "The notation (1,4) placed next to an entity in an ER diagram signifies that:",
+    options: [
+      "There is a 1-to-4 relationship with another entity",
+      "An entity instance must be associated with a minimum of 1 and a maximum of 4 related entity instances",
+      "The entity has exactly 4 attributes and 1 primary key",
+      "The relationship has a 4:1 ratio of participation on this entity's side"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "medium",
+    concept: "Strong vs. Weak Relationship",
+    text: "What is the key difference between a weak (non-identifying) and a strong (identifying) relationship in ER modeling?",
+    options: [
+      "A weak relationship always has optional participation; a strong relationship always has mandatory participation",
+      "In a strong (identifying) relationship, the child entity's primary key contains the parent's primary key as a component",
+      "A strong relationship is drawn with a dashed line; a weak relationship is drawn with a solid line",
+      "A weak relationship can only exist between two strong entities"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "medium",
+    concept: "Optional vs. Mandatory Participation",
+    text: "In Crow's Foot notation, which symbol represents optional participation (zero or more) on the many side?",
+    options: [
+      "A double vertical bar (||) indicating exactly one",
+      "A vertical bar with a circle (O|) indicating zero or one",
+      "A crow's foot with a circle (O<) indicating zero or many",
+      "A crow's foot with two bars (||<) indicating one or many"
+    ],
+    answer: 2
+  },
+  {
+    topic: 2, difficulty: "medium",
+    concept: "Handling Multivalued Attributes",
+    text: "A database designer encounters a PERSON entity with a multivalued attribute 'PhoneNumber'. The two best design approaches to handle this are:",
+    options: [
+      "Store all phone numbers in a single comma-separated string field, or ignore the attribute",
+      "Create multiple phone number columns (Phone1, Phone2, Phone3) in PERSON, or move PhoneNumber to a new PHONE entity",
+      "Convert PhoneNumber into a derived attribute, or use it as a composite key",
+      "Mark PhoneNumber as optional and store only one value, or delete the attribute from the model"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "medium",
+    concept: "Ternary Relationship",
+    text: "A ternary relationship in ER modeling involves:",
+    options: [
+      "A relationship between one entity and itself",
+      "A relationship between exactly two different entity types",
+      "A simultaneous relationship among three different entity types",
+      "A relationship that has exactly three attributes"
+    ],
+    answer: 2
+  },
+  {
+    topic: 2, difficulty: "medium",
+    concept: "ERD Development Steps",
+    text: "Which of the following best represents the correct order of steps in developing an ER diagram?",
+    options: [
+      "Write SQL → Create tables → Identify entities → Add relationships",
+      "Identify entities → Identify relationships → Identify attributes → Determine keys → Identify cardinality",
+      "Normalize tables → Add foreign keys → Draw ERD → Identify business rules",
+      "Create the physical model → Map to logical model → Draw conceptual ERD"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "medium",
+    concept: "Recursive Relationship",
+    text: "In a company, each EMPLOYEE may manage zero or more other EMPLOYEEs, and each EMPLOYEE may be managed by at most one other EMPLOYEE. This is an example of:",
+    options: [
+      "A ternary relationship between EMPLOYEE, MANAGER, and DEPARTMENT",
+      "A binary 1:M relationship between EMPLOYEE and MANAGER as separate entities",
+      "A recursive (unary) 1:M relationship within the EMPLOYEE entity",
+      "A mandatory participation constraint on a weak entity"
+    ],
+    answer: 2
+  },
+  {
+    topic: 2, difficulty: "medium",
+    concept: "Strong vs. Weak Entity",
+    text: "Which characteristic definitively distinguishes a weak entity from a strong entity?",
+    options: [
+      "A weak entity always participates in a M:N relationship",
+      "A weak entity cannot be uniquely identified by its own attributes alone and must borrow part of its primary key from a parent entity",
+      "A weak entity has fewer than three attributes",
+      "A weak entity is drawn with a double ellipse in Chen notation"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "medium",
+    concept: "Composite Attribute",
+    text: "A designer models 'FullName' as a composite attribute with components FirstName, MiddleName, and LastName. The advantage of this approach over storing the full name as a single attribute is:",
+    options: [
+      "It reduces data redundancy by eliminating repeated name storage",
+      "It allows queries to search, sort, or filter by individual name components",
+      "It converts the composite attribute into a derived attribute",
+      "It enforces entity integrity by making each name component a primary key"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "medium",
+    concept: "Connectivity",
+    text: "In an ER diagram, a PROFESSOR entity is related to a COURSE entity such that one professor teaches many courses and each course is taught by only one professor. The connectivity is:",
+    options: [
+      "M:N — many professors teach many courses",
+      "1:1 — one professor teaches exactly one course",
+      "1:M — from PROFESSOR to COURSE",
+      "M:1 — from PROFESSOR to COURSE"
+    ],
+    answer: 2
+  },
+
+  // --- HARD (20–29) ---
+  {
+    topic: 2, difficulty: "hard",
+    concept: "Multivalued Attribute Design",
+    text: "A PRODUCT entity has a multivalued attribute 'SupplierID' because each product can be sourced from multiple suppliers. A designer creates a new PRODUCT_SUPPLIER table with attributes (ProductID, SupplierID). This solution:",
+    options: [
+      "Incorrectly converts a multivalued attribute into a derived attribute",
+      "Correctly resolves the multivalued attribute by moving it to a new entity, effectively creating a M:N bridge between PRODUCT and SUPPLIER",
+      "Violates entity integrity by creating a table without a standalone primary key",
+      "Introduces a recursive relationship between PRODUCT and SUPPLIER"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "hard",
+    concept: "Subtype Discriminator",
+    text: "An EMPLOYEE entity is subtyped into FULL_TIME_EMPLOYEE and PART_TIME_EMPLOYEE. The attribute that determines which subtype a given employee belongs to is called a:",
+    options: [
+      "Derived attribute",
+      "Composite key",
+      "Subtype discriminator (or subtype indicator)",
+      "Recursive relationship attribute"
+    ],
+    answer: 2
+  },
+  {
+    topic: 2, difficulty: "hard",
+    concept: "Identifying vs. Non-Identifying Relationship",
+    text: "An ORDER_LINE entity has a composite primary key (OrderID, LineNumber), where OrderID is borrowed from the parent ORDER entity. This means ORDER_LINE participates in a:",
+    options: [
+      "Weak (non-identifying) relationship — depicted with a dashed line",
+      "Strong (identifying) relationship — depicted with a solid line, since the child's PK includes the parent's PK",
+      "Unary (recursive) relationship — the entity relates to itself",
+      "Ternary relationship — three entities are involved"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "hard",
+    concept: "Cardinality",
+    text: "A DOCTOR entity has cardinality notation (2, 10) in relation to a PATIENT entity. This means:",
+    options: [
+      "Each doctor must have a minimum of 2 and a maximum of 10 patients",
+      "Each patient must visit exactly 2 to 10 doctors",
+      "The DOCTOR table can have between 2 and 10 rows",
+      "A doctor and patient relationship must always be M:N"
+    ],
+    answer: 0
+  },
+  {
+    topic: 2, difficulty: "hard",
+    concept: "Recursive Relationship",
+    text: "In a BILL_OF_MATERIALS scenario, a COMPONENT can be composed of other COMPONENTs, and a COMPONENT can itself be part of a larger COMPONENT. The ER diagram would show:",
+    options: [
+      "A ternary relationship among three separate component entities",
+      "A binary relationship between COMPONENT and SUBCOMPONENT as two separate entities",
+      "A recursive (unary) M:N relationship on the COMPONENT entity itself",
+      "A strong identifying relationship between COMPONENT and MATERIAL"
+    ],
+    answer: 2
+  },
+  {
+    topic: 2, difficulty: "hard",
+    concept: "Design Challenges",
+    text: "A designer wants a VEHICLE entity that can be either a CAR, TRUCK, or MOTORCYCLE. Each subtype has unique attributes (e.g., only TRUCK has 'PayloadCapacity'). The best ER modeling approach for this is:",
+    options: [
+      "Create one single VEHICLE table with all possible attributes, leaving irrelevant ones null",
+      "Model VEHICLE as a supertype with CAR, TRUCK, and MOTORCYCLE as subtypes sharing the VEHICLE primary key",
+      "Create three entirely unrelated tables with no shared key structure",
+      "Use a recursive relationship to link each vehicle type back to a generic vehicle record"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "hard",
+    concept: "Weak Entity",
+    text: "A DEPENDENT entity (representing an employee's family member) cannot exist in the database unless a parent EMPLOYEE record exists. DEPENDENT has no unique natural key of its own. The designer models it with a composite PK (EmpID, DependentName). This DEPENDENT entity is best described as:",
+    options: [
+      "A strong entity with a composite primary key",
+      "A supertype entity with EmpID as a discriminator",
+      "A weak entity that is existence-dependent on EMPLOYEE and borrows EmpID as part of its key",
+      "A bridge entity resolving an M:N relationship between EMPLOYEE and FAMILY"
+    ],
+    answer: 2
+  },
+  {
+    topic: 2, difficulty: "hard",
+    concept: "Ternary Relationship",
+    text: "A university model requires tracking which PROFESSOR teaches which COURSE in which CLASSROOM. This can ONLY be accurately captured using:",
+    options: [
+      "Two separate binary relationships: PROFESSOR-COURSE and COURSE-CLASSROOM",
+      "A recursive relationship on the PROFESSOR entity",
+      "A ternary relationship among PROFESSOR, COURSE, and CLASSROOM simultaneously",
+      "A supertype/subtype hierarchy for each entity"
+    ],
+    answer: 2
+  },
+  {
+    topic: 2, difficulty: "hard",
+    concept: "Derived Attribute",
+    text: "A LOAN entity stores LoanStartDate and LoanEndDate. A designer wants to display LoanDuration in reports. Which is the most correct ER modeling decision for LoanDuration?",
+    options: [
+      "Store LoanDuration as a required attribute with its own column to ensure data integrity",
+      "Model LoanDuration as a derived attribute (indicated by a dashed ellipse in Chen notation), calculated from LoanEndDate minus LoanStartDate",
+      "Make LoanDuration a multivalued attribute since different periods can be measured",
+      "Assign LoanDuration as a composite attribute with DurationDays and DurationMonths components"
+    ],
+    answer: 1
+  },
+  {
+    topic: 2, difficulty: "hard",
+    concept: "ERD Development Steps",
+    text: "During ERD development for a hospital system, the designer identifies that a PATIENT entity requires a RoomNumber but rooms are managed separately in a ROOM entity. The designer realizes the RoomNumber in PATIENT is actually a foreign key reference. This discovery happens during which ERD development step?",
+    options: [
+      "Step 1 — Identifying entities",
+      "Step 2 — Identifying and defining relationships between entities",
+      "Step 3 — Identifying and associating attributes with entities or relationships",
+      "Step 5 — Defining primary keys and foreign key linkages"
+    ],
+    answer: 3
+  }
+];
+
+/* ======================================================
+   CONCEPT FEEDBACK MAP — Curriculum-aligned feedback
+   ====================================================== */
+const CONCEPT_FEEDBACK = {
+  // Topic 0
+  "Data vs. Information": "Review Ch.1: Data is raw, unprocessed facts; Information results from processing data with context to reveal meaning.",
+  "Metadata": "Review Ch.1: Metadata is 'data about data' — it makes a database self-describing by storing structural information within itself.",
+  "DBMS Definition": "Review Ch.1: A DBMS is a collection of programs managing structure and access. Key advantages include shared access, security, and reduced redundancy.",
+  "5 Parts of a Database System": "Review Ch.1: The five parts are Hardware, Software, People, Procedures, and Data — all must work together.",
+  "Database Types": "Review Ch.1: Know the distinctions: single vs. multi-user, centralized vs. distributed, operational vs. analytical.",
+  "Relational Model": "Review Ch.2: E.F. Codd introduced the Relational Model in 1970, using two-dimensional tables (relations) as the foundation.",
+  "Basic Building Blocks": "Review Ch.2: Entities, Attributes, Relationships, and Constraints are the four universal building blocks of all data models.",
+  "Data Redundancy": "Review Ch.1: Redundancy stores the same data in multiple places, leading to inconsistency, update/insert/delete anomalies.",
+  "File Systems vs. DBMS": "Review Ch.1: File systems suffer from structural dependence, redundancy, and anomalies. DBMS provides sharing, security, and integrity.",
+  "Data Anomalies": "Review Ch.1: Three anomaly types — Update (inconsistent changes), Insertion (can't add without related data), Deletion (losing data inadvertently).",
+  "Structural Dependence": "Review Ch.1: In file systems, access depends on physical structure. DBMS provides structural independence through abstraction.",
+  "Database Types (Operational/Analytical)": "Review Ch.1: Operational DBs handle daily transactions (OLTP); Analytical DBs (OLAP/Data Warehouses) support decision-making.",
+  "Degrees of Data Abstraction": "Review Ch.2: External → Conceptual → Internal → Physical (highest to lowest). Each level hides detail from the level above.",
+  "Business Rules": "Review Ch.2: Business rules are precise policies. Nouns become entities/attributes; verbs become relationships.",
+  "Data Models Evolution": "Review Ch.2: Hierarchical (tree, structural dependence) → Network (records, complex) → Relational (E.F. Codd, 1970) → OO/NoSQL.",
+  "NoSQL & Big Data": "Review Ch.2: Big Data is characterized by Volume, Velocity, and Variety. NoSQL was developed to handle these challenges at scale.",
+  "Cloud & Distributed Databases": "Review Ch.1: Distributed DBs span multiple locations; Cloud DBs offer scalability and on-demand access via the internet.",
+  "Conceptual vs. Internal Model": "Review Ch.2: The Conceptual Model is the global, implementation-independent blueprint. The Internal Model is DBMS-specific.",
+  "DBA Responsibilities": "Review Ch.1: DBAs manage security, backup/recovery, performance tuning, and overall database health.",
+  "Semistructured Data": "Review Ch.1: Semistructured data (like JSON/XML) has some organizing tags but no rigid schema — fields can vary per record.",
+  "Logical vs. Physical Independence": "Review Ch.2: Physical independence means users interact with logical views (tables) without needing to know physical storage details.",
+  "Object-Oriented Model": "Review Ch.2: In OODM, objects encapsulate data and behavior. Inheritance allows subclasses to acquire parent class properties.",
+  "Ad Hoc Queries": "Review Ch.1: Ad hoc queries are unplanned, one-time questions not covered by routine reports — a key DBMS advantage.",
+  "ERD Notations": "Review Ch.2: Chen uses rectangles/diamonds; Crow's Foot uses line-end symbols for cardinality; UML uses class diagram notation.",
+
+  // Topic 1
+  "Relational Table Basics": "Review Ch.3: A table (relation) contains rows (tuples) and columns (attributes). Each row must be unique.",
+  "Primary Key": "Review Ch.3: A PK uniquely identifies each row, must be unique, and cannot contain NULL values (entity integrity).",
+  "Foreign Key": "Review Ch.3: A FK in one table references the PK of another table, creating a relational link between tables.",
+  "Entity Integrity": "Review Ch.3: Entity integrity requires all PK values to be unique and non-null. No part of a PK may be absent.",
+  "Referential Integrity": "Review Ch.3: A FK must either be NULL or match an existing PK value in the referenced table — no orphan records.",
+  "Composite Key": "Review Ch.3: A composite key uses multiple attributes together to form a unique identifier when no single attribute suffices.",
+  "Null Values": "Review Ch.3: NULL means absent, unknown, or not applicable — it is NOT zero or empty string. Nulls in PKs violate entity integrity.",
+  "Secondary Key": "Review Ch.3: A secondary key is used for searching/retrieval and need not be unique (e.g., searching customers by LastName).",
+  "Data Dictionary": "Review Ch.3: The data dictionary (system catalog) stores metadata about all database objects — tables, columns, relationships, constraints.",
+  "Logical vs. Physical View": "Review Ch.3: Logical view = tables and relationships as users see them. Physical view = how data is actually stored on disk.",
+  "Functional Dependence": "Review Ch.3: A → B means the value of A determines B. Understanding this is key to normalization.",
+  "Candidate vs. Primary Key": "Review Ch.3: Candidate keys can each uniquely identify rows. The designer selects one as PK; others become alternate keys.",
+  "Homonyms and Synonyms": "Review Ch.3: Synonyms = different names, same thing (CustID vs. ClientNumber). Homonyms = same name, different meanings.",
+  "1:M Relationship Implementation": "Review Ch.3: In 1:M, the FK goes in the 'many' side table, referencing the PK of the 'one' side.",
+  "M:N Relationship Implementation": "Review Ch.3: M:N cannot be implemented directly — it creates multi-valued FK columns. A bridge/composite entity must be created.",
+  "Bridge/Associative Entity": "Review Ch.3: A composite (bridge) entity decomposes M:N into two 1:M relationships, often carrying additional relationship attributes.",
+  "Superkey": "Review Ch.3: A superkey can uniquely identify rows but may include redundant attributes. A candidate key is the minimal superkey.",
+  "Index": "Review Ch.3: Indexes create fast lookup structures. They speed up SELECTs but add overhead to INSERT/UPDATE/DELETE operations.",
+  "1:1 Relationship Implementation": "Review Ch.3: In 1:1, place the FK in the table with mandatory participation to avoid nulls.",
+  "Relational Table Characteristics": "Review Ch.3: Tables have unique rows, same-domain columns, unique column names, and no significance to row or column order.",
+  "Determination": "Review Ch.3: A → B (A determines B) is the foundation of functional dependence and normalization theory.",
+
+  // Topic 2
+  "Entity Set vs. Instance": "Review Ch.4: An entity set is the complete collection (e.g., all students). An entity instance is one specific occurrence (Student #1042).",
+  "Required vs. Optional Attribute": "Review Ch.4: Required attributes must always have values. Optional attributes may be left null for some instances.",
+  "Attribute Domain": "Review Ch.4: A domain defines the valid value set for an attribute (e.g., Age must be a positive integer between 0 and 150).",
+  "Composite Attribute": "Review Ch.4: Composite attributes (like Address) are subdivided into components that can be independently queried.",
+  "Multivalued Attribute": "Review Ch.4: A multivalued attribute holds multiple values per instance (e.g., multiple phone numbers). Must be resolved in design.",
+  "Derived Attribute": "Review Ch.4: A derived attribute (dashed ellipse in Chen notation) is computed from other stored attributes, not stored directly.",
+  "Connectivity": "Review Ch.4: Connectivity classifies the relationship type — 1:1 (one-to-one), 1:M (one-to-many), or M:N (many-to-many).",
+  "Strong vs. Weak Entity": "Review Ch.4: A strong entity has its own unique PK. A weak entity is existence-dependent and borrows PK components from its parent.",
+  "Existence Dependence": "Review Ch.4: Existence dependence means an entity instance cannot exist without a related parent entity instance.",
+  "Unary Relationship": "Review Ch.4: A unary (recursive) relationship involves one entity type related to itself (e.g., EMPLOYEE manages EMPLOYEE).",
+  "Cardinality": "Review Ch.4: Cardinality specifies min/max occurrences. Notation (1,4) means minimum 1, maximum 4 related instances.",
+  "Strong vs. Weak Relationship": "Review Ch.4: Identifying (strong) relationship: child PK includes parent PK; solid line. Non-identifying (weak): child PK is independent; dashed line.",
+  "Optional vs. Mandatory Participation": "Review Ch.4: Optional (O| or O<): zero is permitted. Mandatory (|| or ||<): at least one instance required.",
+  "Handling Multivalued Attributes": "Review Ch.4: Best approaches: create multiple columns (Phone1, Phone2...) for small fixed sets, or create a new entity for variable-length sets.",
+  "Ternary Relationship": "Review Ch.4: A ternary relationship involves three entity types simultaneously and cannot always be decomposed into binary relationships without losing meaning.",
+  "ERD Development Steps": "Review Ch.4: Steps: Identify entities → Identify relationships → Identify attributes → Define keys → Identify cardinality constraints.",
+  "Recursive Relationship": "Review Ch.4: A recursive (unary) relationship means an entity is related to other instances of itself (EMPLOYEE manages EMPLOYEE).",
+  "Design Challenges": "Review Ch.4: Real-world designs force compromises between elegance and practicality — supertypes/subtypes, handling nulls, resolving M:N.",
+  "Multivalued Attribute Design": "Review Ch.4: Moving a multivalued attribute to a new entity creates a 1:M or M:N relationship and maintains First Normal Form.",
+  "Subtype Discriminator": "Review Ch.4: A subtype discriminator attribute determines which subtype a supertype instance belongs to (e.g., EmployeeType = 'FT' or 'PT').",
+  "Identifying vs. Non-Identifying Relationship": "Review Ch.4: Identifying relationship = child's PK contains parent's PK (strong dependency). Non-identifying = child has independent PK.",
+  "Weak Entity": "Review Ch.4: A weak entity is existence-dependent on a parent, borrows part of its PK from the parent, and participates in an identifying relationship.",
+};
+
+/* ======================================================
+   STATE MANAGEMENT
+   ====================================================== */
+let state = {
+  activeTopicId: null,      // 0, 1, or 2
+  questions: [],            // 30 questions for current topic
+  currentIndex: 0,          // Current question index (0-based)
+  answers: [],              // Array of answer indices (null = unanswered)
+  submitted: false          // Has the quiz been submitted?
+};
+
+/* ======================================================
+   UTILITY FUNCTIONS
+   ====================================================== */
+
+/** Get questions for a specific topic, ordered: easy, medium, hard */
+function getTopicQuestions(topicId) {
+  const all = QUESTIONS.filter(q => q.topic === topicId);
+  const easy   = all.filter(q => q.difficulty === "easy");
+  const medium = all.filter(q => q.difficulty === "medium");
+  const hard   = all.filter(q => q.difficulty === "hard");
+  return [...easy, ...medium, ...hard];
+}
+
+/** Show a specific screen */
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screenId).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/** Show home screen */
+function showHome() {
+  state = { activeTopicId: null, questions: [], currentIndex: 0, answers: [], submitted: false };
+  showScreen('home');
+}
+
+/** Confirm before leaving quiz mid-way */
+function confirmHome() {
+  if (!state.submitted && state.answers.some(a => a !== null)) {
+    if (!confirm("Are you sure you want to leave? Your progress will be lost.")) return;
+  }
+  showHome();
+}
+
+/* ======================================================
+   START QUIZ
+   ====================================================== */
+function startQuiz(topicId) {
+  state.activeTopicId = topicId;
+  state.questions = getTopicQuestions(topicId);
+  state.currentIndex = 0;
+  state.answers = new Array(state.questions.length).fill(null);
+  state.submitted = false;
+
+  // Update header labels
+  document.getElementById('quiz-topic-label').textContent = TOPICS[topicId].title;
+
+  showScreen('quiz');
+  renderQuestion();
+  renderSidebar();
+}
+
+/* ======================================================
+   RENDER QUESTION
+   ====================================================== */
+function renderQuestion() {
+  const q = state.questions[state.currentIndex];
+  const idx = state.currentIndex;
+  const total = state.questions.length;
+  const answered = state.answers.filter(a => a !== null).length;
+
+  // Header meta
+  document.getElementById('quiz-meta-label').textContent =
+    `Question ${idx + 1} of ${total} — ${capitalize(q.difficulty)}`;
+
+  // Progress bar
+  const pct = Math.round((answered / total) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-answered').textContent = answered + ' answered';
+  document.getElementById('progress-pct').textContent = pct + '%';
+
+  // Question num badge
+  document.getElementById('q-num-badge').textContent = idx + 1;
+
+  // Tags
+  const tagsEl = document.getElementById('q-tags');
+  tagsEl.innerHTML = `
+    <span class="tag tag-${q.difficulty}">${capitalize(q.difficulty)}</span>
+    <span class="tag tag-concept">${q.concept}</span>
+  `;
+
+  // Question text
+  document.getElementById('q-text').textContent = q.text;
+
+  // Options
+  const optEl = document.getElementById('options-list');
+  const letters = ['A', 'B', 'C', 'D'];
+  const userAnswer = state.answers[idx];
+  const isAnswered = userAnswer !== null;
+  const isSubmitted = state.submitted;
+
+  optEl.innerHTML = '';
+  q.options.forEach((opt, oi) => {
+    let chipClass = 'option-chip';
+    let iconHtml = '';
+
+    if (isAnswered || isSubmitted) {
+      if (oi === q.answer) {
+        chipClass += ' correct';
+        iconHtml = '<span class="material-icons-round option-chip__icon">check_circle</span>';
+      } else if (oi === userAnswer && oi !== q.answer) {
+        chipClass += ' wrong';
+        iconHtml = '<span class="material-icons-round option-chip__icon">cancel</span>';
+      }
+      chipClass += ' disabled';
+    } else {
+      chipClass += ' disabled'; // Disable if in review post-submit
+    }
+
+    // If not submitted, allow selection styling
+    if (!isSubmitted) {
+      chipClass = chipClass.replace(' disabled', '');
+      if (oi === userAnswer) chipClass += ' selected';
+    }
+
+    const btn = document.createElement('button');
+    btn.className = chipClass;
+    btn.innerHTML = `
+      <div class="option-chip__letter">${letters[oi]}</div>
+      <div class="option-chip__text">${opt}</div>
+      ${iconHtml}
+    `;
+    if (!isSubmitted) {
+      btn.addEventListener('click', () => selectAnswer(oi));
+    }
+    optEl.appendChild(btn);
+  });
+
+  // Feedback box
+  const fbEl = document.getElementById('feedback-box');
+  if ((isAnswered || isSubmitted) && userAnswer !== null) {
+    const isCorrect = userAnswer === q.answer;
+    fbEl.className = 'feedback-box show ' + (isCorrect ? 'correct' : 'wrong');
+    const feedbackText = CONCEPT_FEEDBACK[q.concept] || '';
+    fbEl.innerHTML = isCorrect
+      ? `<strong>✓ Correct!</strong> ${feedbackText}`
+      : `<strong>✗ Incorrect.</strong> The correct answer is <strong>${letters[q.answer]}: ${q.options[q.answer]}</strong>. ${feedbackText}`;
+  } else {
+    fbEl.className = 'feedback-box';
+    fbEl.innerHTML = '';
+  }
+
+  // Navigation buttons
+  document.getElementById('btn-prev').disabled = idx === 0;
+  const isLast = idx === total - 1;
+  const nextBtn = document.getElementById('btn-next');
+  const submitBtn = document.getElementById('btn-submit');
+
+  if (isSubmitted) {
+    nextBtn.style.display = isLast ? 'none' : 'inline-flex';
+    submitBtn.style.display = 'none';
+  } else if (isLast) {
+    nextBtn.style.display = 'none';
+    submitBtn.style.display = 'inline-flex';
+  } else {
+    nextBtn.style.display = 'inline-flex';
+    submitBtn.style.display = 'none';
+  }
+
+  // Animate
+  const card = document.getElementById('question-card');
+  card.classList.remove('animate-in');
+  void card.offsetWidth;
+  card.classList.add('animate-in');
+
+  // Update sidebar
+  renderSidebar();
+}
+
+/* ======================================================
+   SELECT ANSWER
+   ====================================================== */
+function selectAnswer(optionIndex) {
+  if (state.submitted) return;
+  state.answers[state.currentIndex] = optionIndex;
+  renderQuestion();
+}
+
+/* ======================================================
+   NAVIGATE
+   ====================================================== */
+function navigate(direction) {
+  const newIndex = state.currentIndex + direction;
+  if (newIndex < 0 || newIndex >= state.questions.length) return;
+  state.currentIndex = newIndex;
+  renderQuestion();
+}
+
+/* ======================================================
+   RENDER SIDEBAR
+   ====================================================== */
+function renderSidebar() {
+  const grid = document.getElementById('q-grid');
+  grid.innerHTML = '';
+
+  const correct = state.answers.filter((a, i) => a !== null && a === state.questions[i].answer).length;
+  const answered = state.answers.filter(a => a !== null).length;
+
+  state.questions.forEach((q, i) => {
+    const dot = document.createElement('div');
+    let cls = 'q-dot';
+    if (i === state.currentIndex) {
+      cls += ' current';
+    } else if (state.answers[i] !== null) {
+      if (state.submitted) {
+        cls += state.answers[i] === q.answer ? ' answered' : ' wrong-answered';
+      } else {
+        cls += ' answered';
+      }
+    }
+    dot.className = cls;
+    dot.textContent = i + 1;
+    dot.title = `Q${i + 1}: ${q.concept} (${q.difficulty})`;
+    dot.addEventListener('click', () => { state.currentIndex = i; renderQuestion(); });
+    grid.appendChild(dot);
+  });
+
+  // Live score
+  document.getElementById('live-score').textContent = `${correct}/${answered}`;
+}
+
+/* ======================================================
+   SUBMIT QUIZ
+   ====================================================== */
+function submitQuiz() {
+  const unanswered = state.answers.filter(a => a === null).length;
+  if (unanswered > 0) {
+    if (!confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) return;
+  }
+  state.submitted = true;
+  showResults();
+}
+
+/* ======================================================
+   SHOW RESULTS
+   ====================================================== */
+function showResults() {
+  showScreen('results');
+
+  const qs = state.questions;
+  const ans = state.answers;
+  const total = qs.length;
+  let correct = 0, wrong = 0, skipped = 0;
+
+  qs.forEach((q, i) => {
+    if (ans[i] === null) skipped++;
+    else if (ans[i] === q.answer) correct++;
+    else wrong++;
+  });
+
+  const pct = Math.round((correct / total) * 100);
+
+  // Emoji + title
+  let emoji, title, sub;
+  if (pct >= 90)      { emoji = '🏆'; title = 'Outstanding!'; sub = 'Exceptional performance — you have mastered this topic.'; }
+  else if (pct >= 75) { emoji = '🎉'; title = 'Great Job!'; sub = 'Strong understanding with a few areas to review.'; }
+  else if (pct >= 60) { emoji = '👍'; title = 'Good Effort!'; sub = 'Solid foundation — focus on the flagged concepts below.'; }
+  else if (pct >= 40) { emoji = '📚'; title = 'Keep Studying'; sub = 'Review the highlighted concepts and try again.'; }
+  else                { emoji = '💪'; title = 'Don\'t Give Up!'; sub = 'Return to your study guide and revisit these topics.'; }
+
+  document.getElementById('results-emoji').textContent = emoji;
+  document.getElementById('results-title').textContent = title;
+  document.getElementById('results-sub').textContent = sub;
+  document.getElementById('score-pct').textContent = pct + '%';
+
+  // Score ring
+  const circumference = 2 * Math.PI * 70; // 439.82
+  const offset = circumference - (pct / 100) * circumference;
+  const ring = document.getElementById('score-ring-fg');
+  ring.style.strokeDashoffset = circumference;
+  const ringColor = pct >= 75 ? '#34A853' : pct >= 50 ? '#FBBC04' : '#EA4335';
+  ring.style.stroke = ringColor;
+  setTimeout(() => { ring.style.strokeDashoffset = offset; }, 100);
+
+  // Stat cards
+  document.getElementById('result-stats').innerHTML = `
+    <div class="result-stat-card">
+      <div class="result-stat-card__val val-total">${total}</div>
+      <div class="result-stat-card__label">Total Questions</div>
+    </div>
+    <div class="result-stat-card">
+      <div class="result-stat-card__val val-correct">${correct}</div>
+      <div class="result-stat-card__label">Correct</div>
+    </div>
+    <div class="result-stat-card">
+      <div class="result-stat-card__val val-wrong">${wrong}</div>
+      <div class="result-stat-card__label">Incorrect</div>
+    </div>
+    <div class="result-stat-card">
+      <div class="result-stat-card__val val-skip">${skipped}</div>
+      <div class="result-stat-card__label">Skipped</div>
+    </div>
+    <div class="result-stat-card">
+      <div class="result-stat-card__val val-total">${pct}%</div>
+      <div class="result-stat-card__label">Final Score</div>
+    </div>
+  `;
+
+  // Concept breakdown
+  buildConceptBreakdown();
+
+  // Full review
+  buildReview();
+}
+
+/* ======================================================
+   CONCEPT BREAKDOWN
+   ====================================================== */
+function buildConceptBreakdown() {
+  // Group questions by concept
+  const conceptMap = {};
+  state.questions.forEach((q, i) => {
+    if (!conceptMap[q.concept]) conceptMap[q.concept] = { correct: 0, total: 0 };
+    conceptMap[q.concept].total++;
+    if (state.answers[i] === q.answer) conceptMap[q.concept].correct++;
+  });
+
+  const conceptCardsEl = document.getElementById('concept-cards');
+  conceptCardsEl.innerHTML = '';
+
+  // Sort by performance (worst first)
+  const sorted = Object.entries(conceptMap).sort((a, b) => {
+    const pA = a[1].correct / a[1].total;
+    const pB = b[1].correct / b[1].total;
+    return pA - pB;
+  });
+
+  sorted.forEach(([concept, stats]) => {
+    const pct = Math.round((stats.correct / stats.total) * 100);
+    let strength, label;
+    if (pct >= 75)     { strength = 'strong'; label = '✓ Strong'; }
+    else if (pct >= 50) { strength = 'average'; label = '⚠ Needs Review'; }
+    else               { strength = 'weak'; label = '✗ Struggled'; }
+
+    const feedback = CONCEPT_FEEDBACK[concept] || `Review your notes on "${concept}" in the Database Systems 621 study guide.`;
+
+    const card = document.createElement('div');
+    card.className = `concept-card ${strength}`;
+    card.innerHTML = `
+      <div class="concept-card__name">${concept}</div>
+      <div class="concept-card__bar-wrap">
+        <div class="concept-card__bar" style="width:0%" data-pct="${pct}"></div>
+      </div>
+      <div class="concept-card__meta">${label} — ${stats.correct}/${stats.total} correct (${pct}%)</div>
+      <div class="concept-card__feedback">${feedback}</div>
+    `;
+    conceptCardsEl.appendChild(card);
+  });
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.concept-card__bar').forEach(bar => {
+      bar.style.width = bar.dataset.pct + '%';
+    });
+  }, 200);
+}
+
+/* ======================================================
+   FULL REVIEW
+   ====================================================== */
+function buildReview() {
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+
+  state.questions.forEach((q, i) => {
+    const userAns = state.answers[i];
+    const isCorrect = userAns === q.answer;
+    const isSkipped = userAns === null;
+
+    let cls = 'review-item ';
+    cls += isSkipped ? 'skipped' : (isCorrect ? 'correct' : 'wrong');
+
+    let detailHtml = '';
+    if (isSkipped) {
+      detailHtml = `<span class="review-item__ans ans-skip"><span class="material-icons-round">remove_circle</span> Skipped</span>
+        <span class="review-item__ans ans-correct"><span class="material-icons-round">check_circle</span> Correct: ${letters[q.answer]}) ${q.options[q.answer]}</span>`;
+    } else if (isCorrect) {
+      detailHtml = `<span class="review-item__ans ans-correct"><span class="material-icons-round">check_circle</span> Your answer: ${letters[userAns]}) ${q.options[userAns]}</span>`;
+    } else {
+      detailHtml = `<span class="review-item__ans ans-wrong"><span class="material-icons-round">cancel</span> Your answer: ${letters[userAns]}) ${q.options[userAns]}</span>
+        <span class="review-item__ans ans-correct"><span class="material-icons-round">check_circle</span> Correct: ${letters[q.answer]}) ${q.options[q.answer]}</span>`;
+    }
+
+    list.innerHTML += `
+      <div class="${cls}">
+        <div class="review-item__q">Q${i + 1}. ${q.text}</div>
+        <div class="review-item__detail">${detailHtml}</div>
+      </div>
+    `;
+  });
+}
+
+/* ======================================================
+   RETAKE QUIZ
+   ====================================================== */
+function retakeQuiz() {
+  startQuiz(state.activeTopicId);
+}
+
+/* ======================================================
+   HELPERS
+   ====================================================== */
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/* ======================================================
+   INIT
+   ====================================================== */
+showHome();
+</script>
+</body>
+</html>

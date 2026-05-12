@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Systems Analysis Quiz Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light Theme Colors */
+            --primary: #4285F4;
+            --primary-dark: #1967D2;
+            --primary-light: #D2E3FC;
+            --secondary: #34A853;
+            --tertiary: #FBBC04;
+            --error: #EA4335;
+            --surface: #FFFFFF;
+            --surface-variant: #F8F9FA;
+            --surface-container: #F1F3F4;
+            --on-surface: #202124;
+            --on-surface-variant: #5F6368;
+            --outline: #DADCE0;
+            --shadow: rgba(60, 64, 67, 0.3);
+            --shadow-light: rgba(60, 64, 67, 0.15);
+            
+            /* Semantic Colors */
+            --success: #34A853;
+            --warning: #FBBC04;
+            --info: #4285F4;
+            
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, #4285F4 0%, #34A853 100%);
+            --gradient-secondary: linear-gradient(135deg, #FBBC04 0%, #EA4335 100%);
+            --gradient-tertiary: linear-gradient(135deg, #A142F4 0%, #4285F4 100%);
+        }
+
+        [data-theme="dark"] {
+            --primary: #8AB4F8;
+            --primary-dark: #4285F4;
+            --primary-light: #1F3A5F;
+            --secondary: #81C995;
+            --tertiary: #FDD663;
+            --error: #F28B82;
+            --surface: #1F1F1F;
+            --surface-variant: #2D2D2D;
+            --surface-container: #3C3C3C;
+            --on-surface: #E8EAED;
+            --on-surface-variant: #9AA0A6;
+            --outline: #5F6368;
+            --shadow: rgba(0, 0, 0, 0.5);
+            --shadow-light: rgba(0, 0, 0, 0.3);
+            
+            --success: #81C995;
+            --warning: #FDD663;
+            --info: #8AB4F8;
+            
+            --gradient-primary: linear-gradient(135deg, #8AB4F8 0%, #81C995 100%);
+            --gradient-secondary: linear-gradient(135deg, #FDD663 0%, #F28B82 100%);
+            --gradient-tertiary: linear-gradient(135deg, #C58AF9 0%, #8AB4F8 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--surface-variant);
+            color: var(--on-surface);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--surface);
+            box-shadow: 0 2px 8px var(--shadow-light);
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 4px 12px var(--shadow-light);
+        }
+
+        .header-title {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--on-surface);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .theme-toggle {
+            background: var(--surface-container);
+            border: none;
+            border-radius: 24px;
+            padding: 10px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--on-surface);
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--outline);
+            transform: translateY(-2px);
+        }
+
+        .progress-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            color: var(--on-surface-variant);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            width: 100%;
+            display: flex;
+            gap: 32px;
+            flex: 1;
+        }
+
+        /* Quiz Grid Sidebar */
+        .quiz-grid {
+            width: 280px;
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 8px var(--shadow-light);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .quiz-grid h3 {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: var(--on-surface);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        .grid-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            background: var(--surface-variant);
+            border: 2px solid transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            color: var(--on-surface-variant);
+        }
+
+        .grid-item:hover {
+            transform: scale(1.1);
+            border-color: var(--primary);
+        }
+
+        .grid-item.answered {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .grid-item.current {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.15);
+        }
+
+        /* Quiz Content */
+        .quiz-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .welcome-screen,
+        .quiz-screen,
+        .results-screen {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 48px;
+            box-shadow: 0 4px 16px var(--shadow-light);
+        }
+
+        .welcome-screen h1 {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-screen p {
+            font-size: 18px;
+            color: var(--on-surface-variant);
+            margin-bottom: 32px;
+            line-height: 1.8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--surface-variant);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px var(--shadow-light);
+        }
+
+        .stat-card.primary { border-left: 4px solid var(--primary); }
+        .stat-card.secondary { border-left: 4px solid var(--secondary); }
+        .stat-card.tertiary { border-left: 4px solid var(--tertiary); }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--on-surface);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--on-surface-variant);
+            margin-top: 8px;
+        }
+
+        /* Question Card */
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--outline);
+        }
+
+        .question-meta {
+            display: flex;
+            gap: 12px;
+        }
+
+        .badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.easy {
+            background: rgba(52, 168, 83, 0.1);
+            color: var(--secondary);
+        }
+
+        .badge.medium {
+            background: rgba(251, 188, 4, 0.1);
+            color: var(--tertiary);
+        }
+
+        .badge.hard {
+            background: rgba(234, 67, 53, 0.1);
+            color: var(--error);
+        }
+
+        .badge.topic {
+            background: rgba(66, 133, 244, 0.1);
+            color: var(--primary);
+        }
+
+        .question-number {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--on-surface-variant);
+        }
+
+        .question-text {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 32px;
+            color: var(--on-surface);
+            line-height: 1.6;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .option {
+            background: var(--surface-variant);
+            border: 2px solid var(--outline);
+            border-radius: 12px;
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .option:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateX(8px);
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 4px 12px var(--shadow-light);
+        }
+
+        .option-letter {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .option.selected .option-letter {
+            background: var(--primary);
+            color: white;
+        }
+
+        .option-text {
+            flex: 1;
+            font-size: 16px;
+            color: var(--on-surface);
+        }
+
+        /* Navigation */
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 24px;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px var(--shadow-light);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--surface-container);
+            color: var(--on-surface);
+        }
+
+        .btn-secondary:hover {
+            background: var(--outline);
+        }
+
+        .btn-success {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 16px 48px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            margin-bottom: 32px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--on-surface-variant);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--surface-container);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        /* Results Screen */
+        .results-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .results-header h1 {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .score-display {
+            font-size: 72px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 24px 0;
+        }
+
+        .score-label {
+            font-size: 18px;
+            color: var(--on-surface-variant);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .result-card {
+            background: var(--surface-variant);
+            border-radius: 12px;
+            padding: 24px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .result-card h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: var(--on-surface);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--outline);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .concept-breakdown {
+            margin-top: 32px;
+        }
+
+        .concept-breakdown h2 {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 28px;
+            margin-bottom: 24px;
+            color: var(--on-surface);
+        }
+
+        .concept-card {
+            background: var(--surface-variant);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--error);
+        }
+
+        .concept-card h4 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--error);
+        }
+
+        .concept-card p {
+            font-size: 14px;
+            color: var(--on-surface-variant);
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .quiz-grid {
+                width: 100%;
+                position: static;
+            }
+
+            .grid-container {
+                grid-template-columns: repeat(10, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .welcome-screen,
+            .quiz-screen,
+            .results-screen {
+                padding: 24px;
+            }
+
+            .welcome-screen h1 {
+                font-size: 32px;
+            }
+
+            .question-text {
+                font-size: 18px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .navigation {
+                flex-direction: column;
+            }
+
+            .grid-container {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 48px;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--surface-container);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo">🎓</div>
+                    <h1 class="header-title">IT Systems Quiz Dashboard</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="progress-info">
+                        <span id="questionProgress">0/90</span>
+                    </div>
+                    <button class="theme-toggle" onclick="toggleTheme()">
+                        <span id="themeIcon">🌙</span>
+                        <span id="themeText">Dark</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Question Grid Sidebar -->
+            <aside class="quiz-grid hidden" id="quizGrid">
+                <h3>Question Navigator</h3>
+                <div class="grid-container" id="gridContainer"></div>
+            </aside>
+
+            <!-- Quiz Content Area -->
+            <div class="quiz-content">
+                <!-- Welcome Screen -->
+                <div class="welcome-screen fade-in" id="welcomeScreen">
+                    <h1>Welcome to IT Systems Analysis Quiz</h1>
+                    <p>Test your knowledge across three comprehensive topics in Information Technology and Systems Analysis. This quiz contains 90 carefully crafted questions designed to assess your understanding at multiple difficulty levels.</p>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card primary">
+                            <div class="stat-number">90</div>
+                            <div class="stat-label">Total Questions</div>
+                        </div>
+                        <div class="stat-card secondary">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">Topics Covered</div>
+                        </div>
+                        <div class="stat-card tertiary">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">Difficulty Levels</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3 style="color: var(--primary); margin-bottom: 12px;">📚 Topic 1</h3>
+                            <p style="color: var(--on-surface-variant);">Introduction to IT & Systems Analysis</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 style="color: var(--secondary); margin-bottom: 12px;">💼 Topic 2</h3>
+                            <p style="color: var(--on-surface-variant);">Analysing the Business Case</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 style="color: var(--tertiary); margin-bottom: 12px;">⚙️ Topic 3</h3>
+                            <p style="color: var(--on-surface-variant);">Managing Systems Projects</p>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success" onclick="startQuiz()">
+                        <span>Start Quiz</span>
+                        <span>→</span>
+                    </button>
+                </div>
+
+                <!-- Quiz Screen -->
+                <div class="quiz-screen hidden fade-in" id="quizScreen">
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span id="progressText">Question 0 of 90</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="question-header">
+                        <div class="question-meta">
+                            <span class="badge topic" id="topicBadge">Topic 1</span>
+                            <span class="badge easy" id="difficultyBadge">Easy</span>
+                        </div>
+                        <div class="question-number" id="questionNumber">Question 1 of 90</div>
+                    </div>
+
+                    <div class="question-text" id="questionText"></div>
+
+                    <div class="options-container" id="optionsContainer"></div>
+
+                    <div class="navigation">
+                        <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()" disabled>
+                            <span>←</span>
+                            <span>Previous</span>
+                        </button>
+                        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>
+                            <span>Next</span>
+                            <span>→</span>
+                        </button>
+                        <button class="btn btn-success hidden" id="submitBtn" onclick="submitQuiz()">
+                            <span>Submit Quiz</span>
+                            <span>✓</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Screen -->
+                <div class="results-screen hidden fade-in" id="resultsScreen">
+                    <div class="results-header">
+                        <h1>Quiz Complete! 🎉</h1>
+                        <div class="score-display" id="finalScore">0%</div>
+                        <div class="score-label" id="scoreLabel">You got 0 out of 90 correct</div>
+                    </div>
+
+                    <div class="results-grid" id="resultsGrid"></div>
+
+                    <div class="concept-breakdown" id="conceptBreakdown"></div>
+
+                    <div style="text-align: center; margin-top: 32px;">
+                        <button class="btn btn-primary" onclick="restartQuiz()">
+                            <span>↻</span>
+                            <span>Take Quiz Again</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Quiz Data Structure
+        const quizData = {
+            topic1: {
+                name: "Introduction to IT & Systems Analysis",
+                easy: [
+                    {
+                        question: "What are the five fundamental components of an information system?",
+                        options: [
+                            "Hardware, Software, Data, Processes, People",
+                            "Hardware, Network, Database, Applications, Users",
+                            "Computers, Programs, Files, Procedures, Staff",
+                            "Devices, Code, Information, Workflows, Managers"
+                        ],
+                        correct: 0,
+                        concept: "Information Systems Components"
+                    },
+                    {
+                        question: "What type of e-commerce involves transactions between a business and individual consumers?",
+                        options: [
+                            "B2B (Business-to-Business)",
+                            "B2C (Business-to-Consumer)",
+                            "C2C (Consumer-to-Consumer)",
+                            "B2G (Business-to-Government)"
+                        ],
+                        correct: 1,
+                        concept: "E-commerce Models"
+                    },
+                    {
+                        question: "Which system handles day-to-day operational transactions like sales, purchases, and inventory updates?",
+                        options: [
+                            "Knowledge Management System (KMS)",
+                            "Transaction Processing System (TPS)",
+                            "Decision Support System (DSS)",
+                            "Executive Information System (EIS)"
+                        ],
+                        correct: 1,
+                        concept: "Business Information Systems"
+                    },
+                    {
+                        question: "What does SDLC stand for in systems development?",
+                        options: [
+                            "Software Design Life Cycle",
+                            "Systems Development Life Cycle",
+                            "Structured Design Logic Control",
+                            "System Documentation and Launch Checklist"
+                        ],
+                        correct: 1,
+                        concept: "Development Methodologies"
+                    },
+                    {
+                        question: "Which IT department function is responsible for ensuring applications work correctly and meet quality standards?",
+                        options: [
+                            "Database Administration",
+                            "Network Administration",
+                            "Quality Assurance",
+                            "User Support"
+                        ],
+                        correct: 2,
+                        concept: "IT Department Functions"
+                    },
+                    {
+                        question: "What is the primary role of a systems analyst?",
+                        options: [
+                            "Writing code for applications",
+                            "Planning, developing, and maintaining information systems",
+                            "Managing network infrastructure",
+                            "Providing technical support to end users"
+                        ],
+                        correct: 1,
+                        concept: "Systems Analyst Role"
+                    },
+                    {
+                        question: "Which component of an information system represents the instructions that tell hardware what to do?",
+                        options: [
+                            "Data",
+                            "Processes",
+                            "Software",
+                            "People"
+                        ],
+                        correct: 2,
+                        concept: "Information Systems Components"
+                    },
+                    {
+                        question: "What type of system focuses on capturing, organizing, and sharing organizational knowledge?",
+                        options: [
+                            "Transaction Processing System",
+                            "Knowledge Management System",
+                            "Business Support System",
+                            "Enterprise Resource Planning"
+                        ],
+                        correct: 1,
+                        concept: "Business Information Systems"
+                    },
+                    {
+                        question: "Which IT function handles the physical and logical aspects of data communication?",
+                        options: [
+                            "Application Development",
+                            "Database Administration",
+                            "Network Administration",
+                            "Web Support"
+                        ],
+                        correct: 2,
+                        concept: "IT Department Functions"
+                    },
+                    {
+                        question: "What is the main characteristic of B2B e-commerce?",
+                        options: [
+                            "Transactions between businesses and consumers",
+                            "Transactions between two or more businesses",
+                            "Transactions between consumers",
+                            "Government purchasing from businesses"
+                        ],
+                        correct: 1,
+                        concept: "E-commerce Models"
+                    }
+                ],
+                medium: [
+                    {
+                        question: "How does Structured Analysis differ from Object-Oriented Analysis?",
+                        options: [
+                            "Structured Analysis focuses on processes and data flows, while O-O Analysis focuses on objects that combine data and behavior",
+                            "Structured Analysis is faster but less reliable than O-O Analysis",
+                            "Structured Analysis is used for web applications, O-O Analysis for desktop applications",
+                            "There is no significant difference between the two approaches"
+                        ],
+                        correct: 0,
+                        concept: "Development Methodologies"
+                    },
+                    {
+                        question: "What is the primary advantage of Agile methodologies over traditional SDLC?",
+                        options: [
+                            "Agile requires less documentation",
+                            "Agile delivers working software in iterative cycles with continuous feedback",
+                            "Agile is easier to learn",
+                            "Agile eliminates the need for testing"
+                        ],
+                        correct: 1,
+                        concept: "Agile Development"
+                    },
+                    {
+                        question: "How does a Knowledge Management System (KMS) differ from an Enterprise Resource Planning (ERP) system?",
+                        options: [
+                            "KMS focuses on capturing and sharing organizational knowledge, while ERP integrates business processes across departments",
+                            "KMS is for small businesses, ERP is for large enterprises",
+                            "KMS is cloud-based, ERP is on-premises",
+                            "There is no difference"
+                        ],
+                        correct: 0,
+                        concept: "Business Information Systems"
+                    },
+                    {
+                        question: "Why is systems integration crucial in modern enterprise computing?",
+                        options: [
+                            "It reduces hardware costs",
+                            "It allows different systems to share data and work together seamlessly",
+                            "It eliminates the need for databases",
+                            "It makes networks faster"
+                        ],
+                        correct: 1,
+                        concept: "Systems Integration"
+                    },
+                    {
+                        question: "What distinguishes a systems analyst from a software developer?",
+                        options: [
+                            "Analysts focus on understanding business needs and designing solutions, while developers focus on coding",
+                            "Analysts work on hardware, developers work on software",
+                            "Analysts manage projects, developers test applications",
+                            "There is no distinction"
+                        ],
+                        correct: 0,
+                        concept: "Systems Analyst Role"
+                    },
+                    {
+                        question: "In the context of information systems, what makes 'processes' different from 'software'?",
+                        options: [
+                            "Processes are the procedures and workflows, while software is the technology that enables them",
+                            "Processes are automatic, software is manual",
+                            "Processes are hardware-based, software is cloud-based",
+                            "They are the same thing"
+                        ],
+                        correct: 0,
+                        concept: "Information Systems Components"
+                    },
+                    {
+                        question: "How do Business Support Systems (BSS) differ from Transaction Processing Systems (TPS)?",
+                        options: [
+                            "BSS provide analytical and decision support, while TPS handle operational transactions",
+                            "BSS are faster than TPS",
+                            "BSS are for external users, TPS are for internal users",
+                            "BSS don't require databases, TPS do"
+                        ],
+                        correct: 0,
+                        concept: "Business Information Systems"
+                    },
+                    {
+                        question: "What is the relationship between the SDLC and Structured Analysis?",
+                        options: [
+                            "SDLC is a project framework, Structured Analysis is a methodology used within SDLC phases",
+                            "They are competing methodologies",
+                            "SDLC replaced Structured Analysis",
+                            "Structured Analysis is only for agile projects"
+                        ],
+                        correct: 0,
+                        concept: "Development Methodologies"
+                    },
+                    {
+                        question: "Why is the 'people' component considered critical in information systems?",
+                        options: [
+                            "People are the most expensive component",
+                            "People design, develop, operate, and use the system, making them essential for success",
+                            "People can be replaced by automation",
+                            "People only matter during implementation"
+                        ],
+                        correct: 1,
+                        concept: "Information Systems Components"
+                    },
+                    {
+                        question: "How does database administration differ from network administration in an IT department?",
+                        options: [
+                            "Database administration manages data structures and access, while network administration manages connectivity and communication",
+                            "They perform the same functions",
+                            "Database administration is for security, network administration is for performance",
+                            "Database administration is outdated, network administration is modern"
+                        ],
+                        correct: 0,
+                        concept: "IT Department Functions"
+                    }
+                ],
+                hard: [
+                    {
+                        question: "A company needs to integrate a legacy TPS with a modern cloud-based ERP system while maintaining real-time data synchronization. Which approach would best balance technical feasibility and operational risk?",
+                        options: [
+                            "Replace the legacy TPS entirely with the ERP system's built-in transaction modules",
+                            "Implement an Enterprise Service Bus (ESB) with API adapters for both systems",
+                            "Manually export and import data between systems daily",
+                            "Keep the systems separate and use different databases"
+                        ],
+                        correct: 1,
+                        concept: "Systems Integration"
+                    },
+                    {
+                        question: "When comparing SDLC to Agile for a large-scale financial system with strict regulatory requirements, what is the most critical trade-off?",
+                        options: [
+                            "SDLC provides comprehensive documentation and predictability but lacks flexibility; Agile offers adaptability but may struggle with extensive compliance documentation",
+                            "SDLC is always better for regulated industries",
+                            "Agile cannot be used in financial systems",
+                            "There is no trade-off; they are identical for this scenario"
+                        ],
+                        correct: 0,
+                        concept: "Development Methodologies"
+                    },
+                    {
+                        question: "A systems analyst discovers that users describe a 'slow system' but investigation shows adequate server performance. What analytical approach should be taken?",
+                        options: [
+                            "Upgrade the servers immediately",
+                            "Investigate the entire user workflow, network latency, database queries, and interface design to identify the actual bottleneck",
+                            "Tell users the system is working fine",
+                            "Replace the entire system"
+                        ],
+                        correct: 1,
+                        concept: "Systems Analysis"
+                    },
+                    {
+                        question: "An organization wants to implement a KMS, but employees resist sharing knowledge due to job security concerns. What systemic issue must be addressed?",
+                        options: [
+                            "The technology platform is inadequate",
+                            "Organizational culture and incentive structures must be changed to encourage knowledge sharing",
+                            "The system needs better user interface design",
+                            "More training sessions are needed"
+                        ],
+                        correct: 1,
+                        concept: "Knowledge Management Systems"
+                    },
+                    {
+                        question: "When transitioning from waterfall to Agile, which organizational change presents the greatest challenge?",
+                        options: [
+                            "Learning new project management tools",
+                            "Shifting from fixed requirements to iterative development with continuous stakeholder involvement",
+                            "Changing the office layout",
+                            "Updating job titles"
+                        ],
+                        correct: 1,
+                        concept: "Agile Development"
+                    },
+                    {
+                        question: "A company's B2C platform experiences 300% traffic increase during holiday sales. Which architectural decision best ensures scalability?",
+                        options: [
+                            "Buy more expensive servers",
+                            "Implement auto-scaling cloud infrastructure with load balancing and CDN distribution",
+                            "Tell customers to try again later",
+                            "Disable features during peak times"
+                        ],
+                        correct: 1,
+                        concept: "E-commerce Architecture"
+                    },
+                    {
+                        question: "In an enterprise with multiple business units using different systems, what is the primary challenge in implementing a unified ERP?",
+                        options: [
+                            "Technical integration complexity",
+                            "Reconciling different business processes and data standards while managing change resistance",
+                            "Software licensing costs",
+                            "Hardware requirements"
+                        ],
+                        correct: 1,
+                        concept: "Enterprise Systems"
+                    },
+                    {
+                        question: "A Quality Assurance team finds critical bugs two days before deployment. The project is already delayed. What is the most professional approach?",
+                        options: [
+                            "Deploy anyway and fix bugs later",
+                            "Document the risks, delay deployment, fix critical bugs, and communicate transparently with stakeholders",
+                            "Blame the development team",
+                            "Hide the bugs from management"
+                        ],
+                        correct: 1,
+                        concept: "Quality Assurance"
+                    },
+                    {
+                        question: "When designing a TPS for a 24/7 manufacturing environment, what is the most critical non-functional requirement?",
+                        options: [
+                            "User interface aesthetics",
+                            "System availability, fault tolerance, and transaction integrity with rollback capabilities",
+                            "Social media integration",
+                            "Mobile app support"
+                        ],
+                        correct: 1,
+                        concept: "Transaction Processing Systems"
+                    },
+                    {
+                        question: "An organization claims their 'data' is their most valuable asset. Which scenario demonstrates true data-driven decision making?",
+                        options: [
+                            "Storing large amounts of data in databases",
+                            "Using analytics to identify patterns, testing hypotheses, and making decisions based on evidence rather than intuition",
+                            "Having expensive data visualization tools",
+                            "Collecting customer emails"
+                        ],
+                        correct: 1,
+                        concept: "Data-Driven Decision Making"
+                    }
+                ]
+            },
+            topic2: {
+                name: "Analysing the Business Case",
+                easy: [
+                    {
+                        question: "What does SWOT analysis stand for?",
+                        options: [
+                            "Systems, Workflows, Operations, Technology",
+                            "Strengths, Weaknesses, Opportunities, Threats",
+                            "Software, Web, Online, Testing",
+                            "Strategic, Workforce, Organizational, Tactical"
+                        ],
+                        correct: 1,
+                        concept: "Strategic Planning Tools"
+                    },
+                    {
+                        question: "What is the primary purpose of a business case?",
+                        options: [
+                            "To justify a project by outlining scope, costs, benefits, and strategic alignment",
+                            "To create a marketing brochure",
+                            "To train employees",
+                            "To document past projects"
+                        ],
+                        correct: 0,
+                        concept: "Business Case Development"
+                    },
+                    {
+                        question: "Which of the following is a common reason for submitting a systems request?",
+                        options: [
+                            "To improve employee morale",
+                            "To reduce operational costs",
+                            "To change office furniture",
+                            "To organize a company party"
+                        ],
+                        correct: 1,
+                        concept: "Systems Requests"
+                    },
+                    {
+                        question: "What is operational feasibility?",
+                        options: [
+                            "Whether the project will work in practice within the organization",
+                            "Whether the project is profitable",
+                            "Whether technology is available",
+                            "Whether the schedule is realistic"
+                        ],
+                        correct: 0,
+                        concept: "Feasibility Analysis"
+                    },
+                    {
+                        question: "What is the difference between discretionary and nondiscretionary projects?",
+                        options: [
+                            "Discretionary projects are optional based on strategy; nondiscretionary are mandatory",
+                            "Discretionary projects are cheaper",
+                            "Nondiscretionary projects are faster",
+                            "There is no difference"
+                        ],
+                        correct: 0,
+                        concept: "Project Classification"
+                    },
+                    {
+                        question: "What is technical feasibility?",
+                        options: [
+                            "Whether the organization has the technical resources and expertise to complete the project",
+                            "Whether the project is legal",
+                            "Whether users will accept the system",
+                            "Whether the project makes money"
+                        ],
+                        correct: 0,
+                        concept: "Feasibility Analysis"
+                    },
+                    {
+                        question: "In SWOT analysis, what are 'opportunities'?",
+                        options: [
+                            "Internal strengths of the organization",
+                            "External factors that the organization could exploit for benefit",
+                            "Weaknesses that need improvement",
+                            "Threats from competitors"
+                        ],
+                        correct: 1,
+                        concept: "Strategic Planning Tools"
+                    },
+                    {
+                        question: "What is schedule feasibility?",
+                        options: [
+                            "Whether the project can be completed within the required timeframe",
+                            "Whether the project is expensive",
+                            "Whether users want the system",
+                            "Whether technology exists"
+                        ],
+                        correct: 0,
+                        concept: "Feasibility Analysis"
+                    },
+                    {
+                        question: "Which is an example of a tangible benefit?",
+                        options: [
+                            "Improved customer satisfaction",
+                            "Reduced operational costs by $50,000 annually",
+                            "Better company image",
+                            "Higher employee morale"
+                        ],
+                        correct: 1,
+                        concept: "Economic Feasibility"
+                    },
+                    {
+                        question: "What is the purpose of defining project scope during preliminary investigation?",
+                        options: [
+                            "To establish clear boundaries of what the project will and won't include",
+                            "To hire more staff",
+                            "To increase the budget",
+                            "To delay the project"
+                        ],
+                        correct: 0,
+                        concept: "Preliminary Investigation"
+                    }
+                ],
+                medium: [
+                    {
+                        question: "How does economic feasibility differ from technical feasibility?",
+                        options: [
+                            "Economic feasibility assesses financial viability (benefits vs costs), while technical feasibility assesses capability to build the system",
+                            "They are the same thing",
+                            "Economic feasibility is about money, technical is about time",
+                            "Economic is for managers, technical is for developers"
+                        ],
+                        correct: 0,
+                        concept: "Feasibility Analysis"
+                    },
+                    {
+                        question: "What is the difference between a 'problem' and a 'symptom' in systems requests?",
+                        options: [
+                            "A symptom is a visible issue; the problem is the underlying root cause",
+                            "They are identical",
+                            "Problems are technical, symptoms are business-related",
+                            "Symptoms are more serious than problems"
+                        ],
+                        correct: 0,
+                        concept: "Problem Analysis"
+                    },
+                    {
+                        question: "Why is strategic planning important before initiating IT projects?",
+                        options: [
+                            "It ensures projects align with long-term organizational goals and deliver strategic value",
+                            "It's a regulatory requirement",
+                            "It makes projects take longer",
+                            "It reduces the need for budgets"
+                        ],
+                        correct: 0,
+                        concept: "Strategic Planning"
+                    },
+                    {
+                        question: "How do tangible benefits differ from intangible benefits in economic feasibility?",
+                        options: [
+                            "Tangible benefits are measurable and quantifiable (e.g., cost savings), while intangible benefits are qualitative (e.g., improved reputation)",
+                            "Tangible benefits are always larger",
+                            "Intangible benefits don't matter",
+                            "They are the same"
+                        ],
+                        correct: 0,
+                        concept: "Economic Feasibility"
+                    },
+                    {
+                        question: "What role does a systems review committee play?",
+                        options: [
+                            "Evaluating, prioritizing, and approving systems requests based on strategic fit and feasibility",
+                            "Writing code for systems",
+                            "Training users",
+                            "Managing networks"
+                        ],
+                        correct: 0,
+                        concept: "Project Governance"
+                    },
+                    {
+                        question: "Why is it important to identify constraints during preliminary investigation?",
+                        options: [
+                            "Constraints (budget, time, resources) define what's realistic and help set appropriate expectations",
+                            "Constraints slow down projects",
+                            "Constraints are optional",
+                            "Constraints only matter to managers"
+                        ],
+                        correct: 0,
+                        concept: "Preliminary Investigation"
+                    },
+                    {
+                        question: "How do external factors like government regulations impact IT project planning?",
+                        options: [
+                            "They can make certain projects mandatory (nondiscretionary) and add compliance requirements",
+                            "They have no impact on IT projects",
+                            "They only affect marketing projects",
+                            "They make projects cheaper"
+                        ],
+                        correct: 0,
+                        concept: "External Factors"
+                    },
+                    {
+                        question: "What makes a business case 'strong' versus 'weak'?",
+                        options: [
+                            "A strong business case clearly demonstrates strategic alignment, feasibility, and positive ROI with supporting evidence",
+                            "A strong business case is longer",
+                            "A strong business case has more charts",
+                            "A strong business case costs more"
+                        ],
+                        correct: 0,
+                        concept: "Business Case Development"
+                    },
+                    {
+                        question: "In a preliminary investigation, why is fact-finding critical?",
+                        options: [
+                            "It provides objective data to understand the current situation and validate the problem",
+                            "It wastes time",
+                            "It's only for documentation",
+                            "It replaces the need for analysis"
+                        ],
+                        correct: 0,
+                        concept: "Preliminary Investigation"
+                    },
+                    {
+                        question: "How should conflicting stakeholder requirements be handled during business case development?",
+                        options: [
+                            "Identify trade-offs, prioritize based on strategic goals, and negotiate consensus",
+                            "Ignore some stakeholders",
+                            "Pick the loudest stakeholder",
+                            "Cancel the project"
+                        ],
+                        correct: 0,
+                        concept: "Stakeholder Management"
+                    }
+                ],
+                hard: [
+                    {
+                        question: "A project shows a 5-year ROI of 15% but requires significant upfront investment that strains cash flow. The company's strategic plan emphasizes growth over profitability for 3 years. How should economic feasibility be evaluated?",
+                        options: [
+                            "Reject based on cash flow impact",
+                            "Consider strategic fit, explore phased implementation or financing options, and evaluate opportunity cost of not investing",
+                            "Accept based solely on ROI percentage",
+                            "Delay indefinitely"
+                        ],
+                        correct: 1,
+                        concept: "Economic Feasibility"
+                    },
+                    {
+                        question: "During preliminary investigation, users report 'the system is slow.' Investigation reveals adequate server performance but poor database query optimization. What does this illustrate?",
+                        options: [
+                            "Users are wrong about the problem",
+                            "The symptom (slow performance) is visible, but the problem (inefficient queries) requires technical analysis to identify",
+                            "The hardware needs upgrading",
+                            "The system is actually fine"
+                        ],
+                        correct: 1,
+                        concept: "Problem Analysis"
+                    },
+                    {
+                        question: "A SWOT analysis identifies strong internal IT capabilities (strength) and emerging cloud technologies (opportunity). However, competitors are rapidly adopting cloud (threat) while the organization has legacy infrastructure (weakness). What strategic action is most justified?",
+                        options: [
+                            "Ignore cloud technology",
+                            "Leverage internal IT strength to develop a cloud migration strategy that addresses legacy constraints while capitalizing on market opportunities",
+                            "Only focus on weaknesses",
+                            "Abandon all current systems immediately"
+                        ],
+                        correct: 1,
+                        concept: "Strategic Planning Tools"
+                    },
+                    {
+                        question: "Two projects compete for resources: Project A offers $200K annual savings with high implementation risk; Project B offers $100K annual savings with low risk. Both are discretionary. How should prioritization be approached?",
+                        options: [
+                            "Always choose higher savings",
+                            "Evaluate risk-adjusted returns, strategic alignment, and organizational risk tolerance using decision analysis frameworks",
+                            "Always choose lower risk",
+                            "Do both regardless of resources"
+                        ],
+                        correct: 1,
+                        concept: "Project Prioritization"
+                    },
+                    {
+                        question: "A preliminary investigation reveals the 'real problem' differs significantly from what stakeholders initially described. How should this be communicated?",
+                        options: [
+                            "Tell stakeholders they were wrong",
+                            "Present findings diplomatically with evidence, explain root cause analysis, and show how addressing the real problem delivers better outcomes",
+                            "Ignore the findings and address what was originally requested",
+                            "Keep the findings secret"
+                        ],
+                        correct: 1,
+                        concept: "Preliminary Investigation"
+                    },
+                    {
+                        question: "A technically feasible project fails operational feasibility assessment due to user resistance. What is the fundamental issue?",
+                        options: [
+                            "The technology doesn't work",
+                            "Change management and organizational readiness are inadequate; the system won't succeed without user adoption",
+                            "Users need more training",
+                            "The system needs a better interface"
+                        ],
+                        correct: 1,
+                        concept: "Operational Feasibility"
+                    },
+                    {
+                        question: "New data privacy regulations make a customer analytics project nondiscretionary where it was previously discretionary. What changed?",
+                        options: [
+                            "The technology changed",
+                            "The project shifted from strategic choice to legal compliance requirement, changing its priority and justification",
+                            "The budget increased",
+                            "Nothing changed"
+                        ],
+                        correct: 1,
+                        concept: "Project Classification"
+                    },
+                    {
+                        question: "A business case projects $500K benefits but includes $300K in 'improved customer satisfaction' (intangible). How should this be evaluated?",
+                        options: [
+                            "Reject because intangibles can't be measured",
+                            "Critically examine the tangible benefits ($200K), assess if intangibles can be partially quantified (e.g., retention rates), and consider strategic value",
+                            "Accept all claimed benefits at face value",
+                            "Only consider tangible benefits"
+                        ],
+                        correct: 1,
+                        concept: "Economic Feasibility"
+                    },
+                    {
+                        question: "Three systems requests address different symptoms of the same underlying process inefficiency. How should they be handled?",
+                        options: [
+                            "Approve all three requests",
+                            "Conduct a holistic analysis to address the root process issue rather than treating symptoms separately",
+                            "Reject all requests",
+                            "Randomly pick one"
+                        ],
+                        correct: 1,
+                        concept: "Problem Analysis"
+                    },
+                    {
+                        question: "A project is technically and economically feasible but schedule feasibility shows a 2-year timeline while business need is urgent (6 months). What options exist?",
+                        options: [
+                            "Give up on the project",
+                            "Reduce scope for phased delivery, increase resources, consider commercial off-the-shelf solutions, or reset stakeholder expectations with data",
+                            "Promise 6 months anyway",
+                            "Hire more people and hope"
+                        ],
+                        correct: 1,
+                        concept: "Schedule Feasibility"
+                    }
+                ]
+            },
+            topic3: {
+                name: "Managing Systems Projects",
+                easy: [
+                    {
+                        question: "What are the three constraints that make up the Project Triangle?",
+                        options: [
+                            "Cost, Scope, and Time",
+                            "Budget, Quality, and Resources",
+                            "Planning, Execution, and Monitoring",
+                            "People, Process, and Technology"
+                        ],
+                        correct: 0,
+                        concept: "Project Triangle"
+                    },
+                    {
+                        question: "What are the four core functions of a project manager?",
+                        options: [
+                            "Planning, Scheduling, Monitoring, and Reporting",
+                            "Coding, Testing, Deploying, and Maintaining",
+                            "Hiring, Training, Evaluating, and Firing",
+                            "Budgeting, Spending, Saving, and Auditing"
+                        ],
+                        correct: 0,
+                        concept: "Project Management Functions"
+                    },
+                    {
+                        question: "What is the purpose of a Work Breakdown Structure (WBS)?",
+                        options: [
+                            "To divide a project into smaller, manageable tasks",
+                            "To calculate project costs",
+                            "To assign blame when projects fail",
+                            "To create organizational charts"
+                        ],
+                        correct: 0,
+                        concept: "Work Breakdown Structure"
+                    },
+                    {
+                        question: "What is a Gantt chart used for?",
+                        options: [
+                            "Displaying task timelines and progress with horizontal bars",
+                            "Calculating financial returns",
+                            "Organizing office layouts",
+                            "Tracking employee attendance"
+                        ],
+                        correct: 0,
+                        concept: "Project Management Tools"
+                    },
+                    {
+                        question: "What is the 'critical path' in project management?",
+                        options: [
+                            "The longest sequence of dependent tasks; delays on this path delay the entire project",
+                            "The most expensive tasks in a project",
+                            "The tasks assigned to senior managers",
+                            "The first tasks to be completed"
+                        ],
+                        correct: 0,
+                        concept: "Critical Path Method"
+                    },
+                    {
+                        question: "What is 'slack time' in project management?",
+                        options: [
+                            "The amount of time a task can be delayed without affecting the project completion date",
+                            "Time wasted by team members",
+                            "Lunch breaks",
+                            "Overtime hours"
+                        ],
+                        correct: 0,
+                        concept: "Project Scheduling"
+                    },
+                    {
+                        question: "What is the main difference between task duration and elapsed time?",
+                        options: [
+                            "Task duration is the actual work time; elapsed time includes work time plus waiting time",
+                            "They are the same thing",
+                            "Duration is measured in hours; elapsed time is measured in days",
+                            "Duration is for individuals; elapsed time is for teams"
+                        ],
+                        correct: 0,
+                        concept: "Time Management"
+                    },
+                    {
+                        question: "In project management, what are dependent tasks?",
+                        options: [
+                            "Tasks that must be completed in sequence, one after another",
+                            "Tasks that are optional",
+                            "Tasks that are expensive",
+                            "Tasks assigned to contractors"
+                        ],
+                        correct: 0,
+                        concept: "Task Dependencies"
+                    },
+                    {
+                        question: "What is the primary purpose of risk management in projects?",
+                        options: [
+                            "To identify, analyze, and create response plans for potential risks",
+                            "To eliminate all project risks",
+                            "To increase project budgets",
+                            "To delay project timelines"
+                        ],
+                        correct: 0,
+                        concept: "Risk Management"
+                    },
+                    {
+                        question: "How does a PERT chart differ from a Gantt chart?",
+                        options: [
+                            "PERT charts show task dependencies as a network diagram; Gantt charts show timelines as horizontal bars",
+                            "PERT charts are newer than Gantt charts",
+                            "PERT charts are only for software projects",
+                            "There is no difference"
+                        ],
+                        correct: 0,
+                        concept: "Project Management Tools"
+                    }
+                ],
+                medium: [
+                    {
+                        question: "How are the three constraints of the Project Triangle interrelated?",
+                        options: [
+                            "Changing one constraint (e.g., reducing time) typically impacts the others (e.g., increases cost or reduces scope)",
+                            "They are completely independent",
+                            "Only cost affects the other constraints",
+                            "They only matter at the end of the project"
+                        ],
+                        correct: 0,
+                        concept: "Project Triangle"
+                    },
+                    {
+                        question: "What is the difference between multiple successor tasks and multiple predecessor tasks?",
+                        options: [
+                            "Multiple successors means one task leads to several tasks; multiple predecessors means several tasks must finish before one can start",
+                            "They are the same thing",
+                            "Successors are more important than predecessors",
+                            "Successors happen first, predecessors happen last"
+                        ],
+                        correct: 0,
+                        concept: "Task Dependencies"
+                    },
+                    {
+                        question: "Why is monitoring a critical function of project management?",
+                        options: [
+                            "It allows early detection of problems so corrective action can be taken before issues escalate",
+                            "It's only needed for large projects",
+                            "It replaces the need for planning",
+                            "It's primarily for creating reports"
+                        ],
+                        correct: 0,
+                        concept: "Project Management Functions"
+                    },
+                    {
+                        question: "How does qualitative risk analysis differ from quantitative risk analysis?",
+                        options: [
+                            "Qualitative assesses risks subjectively (high/medium/low); quantitative uses numerical analysis (probabilities, impacts)",
+                            "Qualitative is better than quantitative",
+                            "Quantitative is only for financial projects",
+                            "They produce identical results"
+                        ],
+                        correct: 0,
+                        concept: "Risk Management"
+                    },
+                    {
+                        question: "What happens to project schedule if a task on the critical path is delayed by 5 days?",
+                        options: [
+                            "The entire project is delayed by 5 days",
+                            "Nothing happens; other tasks compensate",
+                            "Only that specific task is delayed",
+                            "The project finishes early"
+                        ],
+                        correct: 0,
+                        concept: "Critical Path Method"
+                    },
+                    {
+                        question: "Why is task sequencing important in project scheduling?",
+                        options: [
+                            "It ensures tasks are done in logical order, respecting dependencies and optimizing resource use",
+                            "It makes projects look organized",
+                            "It's only needed for construction projects",
+                            "It eliminates the need for a WBS"
+                        ],
+                        correct: 0,
+                        concept: "Project Scheduling"
+                    },
+                    {
+                        question: "How does reporting support project management?",
+                        options: [
+                            "It communicates status, issues, and decisions to stakeholders, maintaining transparency and alignment",
+                            "It's only needed when projects fail",
+                            "It replaces the need for meetings",
+                            "It's primarily for documentation purposes"
+                        ],
+                        correct: 0,
+                        concept: "Project Management Functions"
+                    },
+                    {
+                        question: "What is the relationship between WBS and project scheduling?",
+                        options: [
+                            "WBS breaks down the work; scheduling adds time estimates, dependencies, and sequencing to those tasks",
+                            "They are the same thing",
+                            "WBS is for costs, scheduling is for time",
+                            "WBS replaces the need for scheduling"
+                        ],
+                        correct: 0,
+                        concept: "Work Breakdown Structure"
+                    },
+                    {
+                        question: "Why do tasks on the critical path have zero slack time?",
+                        options: [
+                            "Any delay in these tasks directly delays project completion, so there's no buffer time available",
+                            "They are assigned to the best team members",
+                            "They are the easiest tasks",
+                            "They cost the most money"
+                        ],
+                        correct: 0,
+                        concept: "Critical Path Method"
+                    },
+                    {
+                        question: "What role does planning play in the project management lifecycle?",
+                        options: [
+                            "Planning defines objectives, scope, tasks, resources, timelines, and success criteria before execution",
+                            "Planning only happens at the project start",
+                            "Planning is optional for small projects",
+                            "Planning is the same as scheduling"
+                        ],
+                        correct: 0,
+                        concept: "Project Management Functions"
+                    }
+                ],
+                hard: [
+                    {
+                        question: "A project has Tasks A(5d), B(3d), C(7d). A→B, A→C, B and C→D(2d). What is the critical path and project duration?",
+                        options: [
+                            "A→C→D; 14 days",
+                            "A→B→D; 10 days",
+                            "All tasks; 17 days",
+                            "A→B→C→D; 17 days"
+                        ],
+                        correct: 0,
+                        concept: "Critical Path Calculation"
+                    },
+                    {
+                        question: "Using the weighted formula: Optimistic=4 days, Most Likely=6 days, Pessimistic=14 days. What is the expected task duration?",
+                        options: [
+                            "6 days",
+                            "7 days",
+                            "8 days",
+                            "10 days"
+                        ],
+                        correct: 1,
+                        concept: "Expected Duration Calculation"
+                    },
+                    {
+                        question: "According to Brooks' Law, what happens when you add developers to a late software project?",
+                        options: [
+                            "The project finishes faster",
+                            "It makes the project later due to communication overhead and ramp-up time",
+                            "Nothing changes",
+                            "Costs decrease"
+                        ],
+                        correct: 1,
+                        concept: "Brooks' Law"
+                    },
+                    {
+                        question: "A stakeholder demands scope expansion mid-project without budget or timeline increase. Using the Project Triangle, what is the project manager's most appropriate response?",
+                        options: [
+                            "Accept all scope changes",
+                            "Explain that expanding scope requires either more time or budget, or reduction in other scope areas, and negotiate trade-offs",
+                            "Refuse all changes",
+                            "Quit the project"
+                        ],
+                        correct: 1,
+                        concept: "Project Triangle"
+                    },
+                    {
+                        question: "Project monitoring reveals a task will finish 3 days late. It has 5 days of slack time. What is the impact on project completion?",
+                        options: [
+                            "Project is delayed by 3 days",
+                            "No impact on project completion date; the task still finishes within its slack allowance",
+                            "Project is delayed by 2 days",
+                            "Project finishes early"
+                        ],
+                        correct: 1,
+                        concept: "Slack Time Analysis"
+                    },
+                    {
+                        question: "A quantitative risk analysis shows a 30% probability of a risk with $50,000 impact. What is the expected monetary value (EMV) of this risk?",
+                        options: [
+                            "$50,000",
+                            "$15,000",
+                            "$30,000",
+                            "$35,000"
+                        ],
+                        correct: 1,
+                        concept: "Risk Management"
+                    },
+                    {
+                        question: "Two parallel task sequences exist: Sequence 1 takes 15 days, Sequence 2 takes 12 days. Which needs more management attention?",
+                        options: [
+                            "Sequence 2 because it's shorter",
+                            "Sequence 1 because it's the critical path; delays here impact project completion",
+                            "Neither needs attention",
+                            "Both need equal attention"
+                        ],
+                        correct: 1,
+                        concept: "Critical Path Method"
+                    },
+                    {
+                        question: "A WBS shows 100 tasks. Which project management tool is most appropriate for tracking interdependencies?",
+                        options: [
+                            "Gantt chart only",
+                            "PERT/CPM network diagram to visualize complex dependencies, supplemented by Gantt for timeline",
+                            "Spreadsheet",
+                            "Email"
+                        ],
+                        correct: 1,
+                        concept: "Project Management Tools"
+                    },
+                    {
+                        question: "Risk assessment identifies both technical risks (40% probability, high impact) and organizational risks (60% probability, medium impact). Which should be prioritized?",
+                        options: [
+                            "Only technical risks",
+                            "Both require mitigation strategies; prioritize based on EMV and strategic importance, not just probability",
+                            "Only organizational risks",
+                            "Neither needs attention"
+                        ],
+                        correct: 1,
+                        concept: "Risk Management"
+                    },
+                    {
+                        question: "A project is behind schedule. The project manager considers crashing (adding resources) vs. fast-tracking (overlapping tasks). What factors determine the choice?",
+                        options: [
+                            "Always choose crashing",
+                            "Crashing increases cost but may reduce time; fast-tracking increases risk due to dependencies. Choose based on available budget, risk tolerance, and task dependencies",
+                            "Always choose fast-tracking",
+                            "Do both simultaneously always"
+                        ],
+                        correct: 1,
+                        concept: "Schedule Compression"
+                    }
+                ]
+            }
+        };
+
+        // State Management
+        let state = {
+            currentScreen: 'welcome',
+            currentQuestion: 0,
+            answers: {},
+            questions: [],
+            startTime: null,
+            theme: 'light'
+        };
+
+        // Initialize Quiz
+        function initializeQuiz() {
+            // Check for saved theme
+            const savedTheme = localStorage.getItem('quizTheme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                state.theme = 'dark';
+                document.getElementById('themeIcon').textContent = '☀️';
+                document.getElementById('themeText').textContent = 'Light';
+            }
+
+            // Generate all questions
+            generateQuestions();
+        }
+
+        function generateQuestions() {
+            const questions = [];
+            
+            // Process each topic
+            Object.keys(quizData).forEach((topicKey, topicIndex) => {
+                const topic = quizData[topicKey];
+                
+                // Process each difficulty level
+                ['easy', 'medium', 'hard'].forEach(difficulty => {
+                    topic[difficulty].forEach(q => {
+                        questions.push({
+                            ...q,
+                            topic: topic.name,
+                            topicIndex: topicIndex + 1,
+                            difficulty: difficulty
+                        });
+                    });
+                });
+            });
+
+            // Shuffle questions
+            state.questions = shuffleArray(questions);
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function startQuiz() {
+            state.currentScreen = 'quiz';
+            state.currentQuestion = 0;
+            state.answers = {};
+            state.startTime = new Date();
+
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            document.getElementById('quizGrid').classList.remove('hidden');
+
+            renderQuestionGrid();
+            displayQuestion();
+        }
+
+        function renderQuestionGrid() {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+
+            state.questions.forEach((_, index) => {
+                const item = document.createElement('div');
+                item.className = 'grid-item';
+                item.textContent = index + 1;
+                item.onclick = () => jumpToQuestion(index);
+                
+                if (index === state.currentQuestion) {
+                    item.classList.add('current');
+                } else if (state.answers[index] !== undefined) {
+                    item.classList.add('answered');
+                }
+                
+                container.appendChild(item);
+            });
+        }
+
+        function jumpToQuestion(index) {
+            state.currentQuestion = index;
+            displayQuestion();
+            renderQuestionGrid();
+        }
+
+        function displayQuestion() {
+            const question = state.questions[state.currentQuestion];
+            
+            // Update progress
+            const progress = ((state.currentQuestion + 1) / state.questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `Question ${state.currentQuestion + 1} of ${state.questions.length}`;
+            document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
+            document.getElementById('questionProgress').textContent = `${state.currentQuestion + 1}/${state.questions.length}`;
+
+            // Update question metadata
+            document.getElementById('topicBadge').textContent = `Topic ${question.topicIndex}`;
+            document.getElementById('difficultyBadge').textContent = question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1);
+            document.getElementById('difficultyBadge').className = `badge ${question.difficulty}`;
+            document.getElementById('questionNumber').textContent = `Question ${state.currentQuestion + 1} of ${state.questions.length}`;
+
+            // Update question text
+            document.getElementById('questionText').textContent = question.question;
+
+            // Render options
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                if (state.answers[state.currentQuestion] === index) {
+                    optionDiv.classList.add('selected');
+                }
+                optionDiv.onclick = () => selectOption(index);
+
+                const letter = String.fromCharCode(65 + index);
+                optionDiv.innerHTML = `
+                    <div class="option-letter">${letter}</div>
+                    <div class="option-text">${option}</div>
+                `;
+
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = state.currentQuestion === 0;
+            
+            const isLastQuestion = state.currentQuestion === state.questions.length - 1;
+            document.getElementById('nextBtn').classList.toggle('hidden', isLastQuestion);
+            document.getElementById('submitBtn').classList.toggle('hidden', !isLastQuestion);
+            
+            // Enable next/submit button only if question is answered
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const isAnswered = state.answers[state.currentQuestion] !== undefined;
+            
+            if (!isLastQuestion) {
+                nextBtn.disabled = !isAnswered;
+            } else {
+                submitBtn.disabled = Object.keys(state.answers).length !== state.questions.length;
+            }
+        }
+
+        function selectOption(optionIndex) {
+            state.answers[state.currentQuestion] = optionIndex;
+            displayQuestion();
+            renderQuestionGrid();
+        }
+
+        function previousQuestion() {
+            if (state.currentQuestion > 0) {
+                state.currentQuestion--;
+                displayQuestion();
+                renderQuestionGrid();
+            }
+        }
+
+        function nextQuestion() {
+            if (state.currentQuestion < state.questions.length - 1) {
+                state.currentQuestion++;
+                displayQuestion();
+                renderQuestionGrid();
+            }
+        }
+
+        function submitQuiz() {
+            if (Object.keys(state.answers).length !== state.questions.length) {
+                alert('Please answer all questions before submitting.');
+                return;
+            }
+
+            state.currentScreen = 'results';
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('quizGrid').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+
+            displayResults();
+        }
+
+        function displayResults() {
+            // Calculate score
+            let correctCount = 0;
+            const topicScores = { 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } };
+            const difficultyScores = { easy: { correct: 0, total: 0 }, medium: { correct: 0, total: 0 }, hard: { correct: 0, total: 0 } };
+            const wrongConcepts = {};
+
+            state.questions.forEach((question, index) => {
+                const isCorrect = state.answers[index] === question.correct;
+                if (isCorrect) {
+                    correctCount++;
+                    topicScores[question.topicIndex].correct++;
+                    difficultyScores[question.difficulty].correct++;
+                } else {
+                    if (!wrongConcepts[question.concept]) {
+                        wrongConcepts[question.concept] = [];
+                    }
+                    wrongConcepts[question.concept].push({
+                        question: question.question,
+                        yourAnswer: question.options[state.answers[index]],
+                        correctAnswer: question.options[question.correct]
+                    });
+                }
+                topicScores[question.topicIndex].total++;
+                difficultyScores[question.difficulty].total++;
+            });
+
+            const percentage = Math.round((correctCount / state.questions.length) * 100);
+
+            // Display score
+            document.getElementById('finalScore').textContent = percentage + '%';
+            document.getElementById('scoreLabel').textContent = `You got ${correctCount} out of ${state.questions.length} correct`;
+
+            // Display performance by category
+            const resultsGrid = document.getElementById('resultsGrid');
+            resultsGrid.innerHTML = `
+                <div class="result-card">
+                    <h3>📊 Overall Performance</h3>
+                    <div class="result-item">
+                        <span>Correct Answers</span>
+                        <strong style="color: var(--success)">${correctCount}/${state.questions.length}</strong>
+                    </div>
+                    <div class="result-item">
+                        <span>Accuracy</span>
+                        <strong style="color: var(--primary)">${percentage}%</strong>
+                    </div>
+                </div>
+
+                <div class="result-card" style="border-left-color: var(--primary)">
+                    <h3>📚 Topic 1: IT & Systems Analysis</h3>
+                    <div class="result-item">
+                        <span>Score</span>
+                        <strong>${topicScores[1].correct}/${topicScores[1].total}</strong>
+                    </div>
+                    <div class="result-item">
+                        <span>Accuracy</span>
+                        <strong>${Math.round((topicScores[1].correct / topicScores[1].total) * 100)}%</strong>
+                    </div>
+                </div>
+
+                <div class="result-card" style="border-left-color: var(--secondary)">
+                    <h3>💼 Topic 2: Business Case Analysis</h3>
+                    <div class="result-item">
+                        <span>Score</span>
+                        <strong>${topicScores[2].correct}/${topicScores[2].total}</strong>
+                    </div>
+                    <div class="result-item">
+                        <span>Accuracy</span>
+                        <strong>${Math.round((topicScores[2].correct / topicScores[2].total) * 100)}%</strong>
+                    </div>
+                </div>
+
+                <div class="result-card" style="border-left-color: var(--tertiary)">
+                    <h3>⚙️ Topic 3: Managing Projects</h3>
+                    <div class="result-item">
+                        <span>Score</span>
+                        <strong>${topicScores[3].correct}/${topicScores[3].total}</strong>
+                    </div>
+                    <div class="result-item">
+                        <span>Accuracy</span>
+                        <strong>${Math.round((topicScores[3].correct / topicScores[3].total) * 100)}%</strong>
+                    </div>
+                </div>
+
+                <div class="result-card" style="border-left-color: var(--success)">
+                    <h3>✅ Easy Questions</h3>
+                    <div class="result-item">
+                        <span>Score</span>
+                        <strong>${difficultyScores.easy.correct}/${difficultyScores.easy.total}</strong>
+                    </div>
+                    <div class="result-item">
+                        <span>Accuracy</span>
+                        <strong>${Math.round((difficultyScores.easy.correct / difficultyScores.easy.total) * 100)}%</strong>
+                    </div>
+                </div>
+
+                <div class="result-card" style="border-left-color: var(--warning)">
+                    <h3>⚡ Medium Questions</h3>
+                    <div class="result-item">
+                        <span>Score</span>
+                        <strong>${difficultyScores.medium.correct}/${difficultyScores.medium.total}</strong>
+                    </div>
+                    <div class="result-item">
+                        <span>Accuracy</span>
+                        <strong>${Math.round((difficultyScores.medium.correct / difficultyScores.medium.total) * 100)}%</strong>
+                    </div>
+                </div>
+
+                <div class="result-card" style="border-left-color: var(--error)">
+                    <h3>🔥 Hard Questions</h3>
+                    <div class="result-item">
+                        <span>Score</span>
+                        <strong>${difficultyScores.hard.correct}/${difficultyScores.hard.total}</strong>
+                    </div>
+                    <div class="result-item">
+                        <span>Accuracy</span>
+                        <strong>${Math.round((difficultyScores.hard.correct / difficultyScores.hard.total) * 100)}%</strong>
+                    </div>
+                </div>
+            `;
+
+            // Display concept breakdown for wrong answers
+            const conceptBreakdown = document.getElementById('conceptBreakdown');
+            if (Object.keys(wrongConcepts).length > 0) {
+                let conceptHTML = '<h2>📖 Areas for Improvement</h2>';
+                conceptHTML += '<p style="color: var(--on-surface-variant); margin-bottom: 24px;">Focus your study on these concepts where you had incorrect answers:</p>';
+
+                Object.keys(wrongConcepts).forEach(concept => {
+                    conceptHTML += `
+                        <div class="concept-card">
+                            <h4>${concept}</h4>
+                            <p>You missed ${wrongConcepts[concept].length} question(s) related to this concept.</p>
+                        </div>
+                    `;
+                });
+
+                conceptBreakdown.innerHTML = conceptHTML;
+            } else {
+                conceptBreakdown.innerHTML = `
+                    <div style="text-align: center; padding: 48px; background: var(--surface-variant); border-radius: 16px;">
+                        <h2 style="color: var(--success); margin-bottom: 16px;">🎉 Perfect Score!</h2>
+                        <p style="color: var(--on-surface-variant);">You answered all questions correctly. Excellent work!</p>
+                    </div>
+                `;
+            }
+        }
+
+        function restartQuiz() {
+            state = {
+                currentScreen: 'welcome',
+                currentQuestion: 0,
+                answers: {},
+                questions: [],
+                startTime: null,
+                theme: state.theme
+            };
+
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            
+            generateQuestions();
+        }
+
+        function toggleTheme() {
+            const newTheme = state.theme === 'light' ? 'dark' : 'light';
+            state.theme = newTheme;
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('quizTheme', newTheme);
+
+            if (newTheme === 'dark') {
+                document.getElementById('themeIcon').textContent = '☀️';
+                document.getElementById('themeText').textContent = 'Light';
+            } else {
+                document.getElementById('themeIcon').textContent = '🌙';
+                document.getElementById('themeText').textContent = 'Dark';
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', initializeQuiz);
+    </script>
+</body>
+</html>

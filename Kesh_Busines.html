@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BM621 Thumb Card Study Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: #f8f9fa;
+    color: #202124;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* TOP NAV */
+  .top-nav {
+    background: #fff;
+    border-bottom: 1px solid #dadce0;
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .nav-logo {
+    width: 36px;
+    height: 36px;
+    background: #1a73e8;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .nav-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: #202124;
+  }
+
+  .nav-subtitle {
+    font-size: 12px;
+    color: #5f6368;
+  }
+
+  .nav-stats {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a73e8;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: #5f6368;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* LAYOUT */
+  .app-body {
+    display: flex;
+    flex: 1;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 260px;
+    background: #fff;
+    border-right: 1px solid #dadce0;
+    padding: 16px 0;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .sidebar-section-title {
+    padding: 8px 16px 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #5f6368;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .topic-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    border-radius: 0 24px 24px 0;
+    margin-right: 8px;
+    transition: background 0.2s;
+    position: relative;
+  }
+
+  .topic-btn:hover { background: #f1f3f4; }
+
+  .topic-btn.active {
+    background: #e8f0fe;
+  }
+
+  .topic-btn.active .topic-name { color: #1a73e8; font-weight: 500; }
+  .topic-btn.active .topic-icon { background: #1a73e8; color: #fff; }
+
+  .topic-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f1f3f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .topic-info { flex: 1; min-width: 0; }
+
+  .topic-name {
+    font-size: 13px;
+    color: #202124;
+    line-height: 1.3;
+  }
+
+  .topic-meta {
+    font-size: 11px;
+    color: #5f6368;
+    margin-top: 2px;
+  }
+
+  .topic-progress-bar {
+    width: 100%;
+    height: 3px;
+    background: #e8eaed;
+    border-radius: 2px;
+    margin-top: 4px;
+    overflow: hidden;
+  }
+
+  .topic-progress-fill {
+    height: 100%;
+    background: #1a73e8;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: #dadce0;
+    margin: 12px 16px;
+  }
+
+  .sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-size: 13px;
+    color: #5f6368;
+    border-radius: 0 24px 24px 0;
+    transition: background 0.2s;
+  }
+
+  .sidebar-btn:hover { background: #f1f3f4; color: #202124; }
+
+  /* MAIN CONTENT */
+  .main-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  /* PAGE HEADER */
+  .page-header {
+    margin-bottom: 24px;
+  }
+
+  .page-breadcrumb {
+    font-size: 12px;
+    color: #5f6368;
+    margin-bottom: 8px;
+  }
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 400;
+    color: #202124;
+    margin-bottom: 4px;
+  }
+
+  .page-description {
+    font-size: 14px;
+    color: #5f6368;
+    max-width: 700px;
+  }
+
+  /* TOPIC CHIPS */
+  .topic-chips {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    padding: 6px 16px;
+    border-radius: 16px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid #dadce0;
+    background: #fff;
+    color: #5f6368;
+    transition: all 0.2s;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  .chip:hover { background: #f1f3f4; border-color: #aaa; }
+
+  .chip.active {
+    background: #1a73e8;
+    color: #fff;
+    border-color: #1a73e8;
+  }
+
+  /* DIFFICULTY FILTER */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .filter-label {
+    font-size: 13px;
+    color: #5f6368;
+    font-weight: 500;
+  }
+
+  .diff-chip {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid #dadce0;
+    background: #fff;
+    color: #5f6368;
+    transition: all 0.2s;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  .diff-chip:hover { background: #f1f3f4; }
+  .diff-chip.active-easy { background: #e6f4ea; color: #137333; border-color: #34a853; }
+  .diff-chip.active-medium { background: #fef7e0; color: #b45309; border-color: #fbbc04; }
+  .diff-chip.active-hard { background: #fce8e6; color: #c5221f; border-color: #ea4335; }
+  .diff-chip.active-all { background: #e8f0fe; color: #1a73e8; border-color: #1a73e8; }
+
+  /* QUESTION GRID */
+  .question-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+
+  /* CARD */
+  .card {
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card:hover {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+
+  .card-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid #f1f3f4;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .card-number {
+    font-size: 11px;
+    color: #5f6368;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .diff-badge {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+
+  .diff-easy { background: #e6f4ea; color: #137333; }
+  .diff-medium { background: #fef7e0; color: #b45309; }
+  .diff-hard { background: #fce8e6; color: #c5221f; }
+
+  .card-body { padding: 16px; flex: 1; }
+
+  .card-question {
+    font-size: 14px;
+    color: #202124;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 8px; }
+
+  .option-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1.5px solid #dadce0;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    font-family: 'Roboto', sans-serif;
+    font-size: 13px;
+    color: #202124;
+    transition: all 0.2s;
+    line-height: 1.4;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #1a73e8;
+  }
+
+  .option-btn:disabled { cursor: default; }
+
+  .option-label {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #f1f3f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .option-btn.correct {
+    background: #e6f4ea;
+    border-color: #34a853;
+    color: #137333;
+  }
+
+  .option-btn.correct .option-label {
+    background: #34a853;
+    color: #fff;
+  }
+
+  .option-btn.wrong {
+    background: #fce8e6;
+    border-color: #ea4335;
+    color: #c5221f;
+  }
+
+  .option-btn.wrong .option-label {
+    background: #ea4335;
+    color: #fff;
+  }
+
+  .option-btn.reveal-correct {
+    background: #e6f4ea;
+    border-color: #34a853;
+    color: #137333;
+    opacity: 0.7;
+  }
+
+  .option-btn.reveal-correct .option-label {
+    background: #34a853;
+    color: #fff;
+  }
+
+  .card-footer {
+    padding: 10px 16px;
+    border-top: 1px solid #f1f3f4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-status {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .status-correct { color: #137333; }
+  .status-wrong { color: #c5221f; }
+  .status-pending { color: #5f6368; }
+
+  .reset-btn-card {
+    font-size: 12px;
+    color: #1a73e8;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Roboto', sans-serif;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+
+  .reset-btn-card:hover { background: #e8f0fe; }
+
+  /* DASHBOARD / HOME */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .dash-card {
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+
+  .dash-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+  }
+
+  .dash-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #e8f0fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .dash-card-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #202124;
+    margin-bottom: 4px;
+  }
+
+  .dash-card-subtitle {
+    font-size: 12px;
+    color: #5f6368;
+    margin-bottom: 16px;
+  }
+
+  .dash-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dash-progress-bar {
+    flex: 1;
+    height: 4px;
+    background: #e8eaed;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .dash-progress-fill {
+    height: 100%;
+    background: #1a73e8;
+    border-radius: 2px;
+    transition: width 0.4s;
+  }
+
+  .dash-progress-text {
+    font-size: 12px;
+    color: #5f6368;
+    white-space: nowrap;
+  }
+
+  /* SUMMARY STATS */
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 900px) {
+    .summary-cards { grid-template-columns: repeat(2, 1fr); }
+    .sidebar { width: 220px; }
+  }
+
+  @media (max-width: 600px) {
+    .summary-cards { grid-template-columns: 1fr 1fr; }
+    .sidebar { display: none; }
+    .question-grid { grid-template-columns: 1fr; }
+  }
+
+  .summary-card {
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+  }
+
+  .summary-card-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a73e8;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .summary-card-label {
+    font-size: 12px;
+    color: #5f6368;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ACTION BTNS */
+  .btn-primary {
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Roboto', sans-serif;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+
+  .btn-primary:hover { background: #1557b0; box-shadow: 0 2px 6px rgba(26,115,232,0.4); }
+
+  .btn-secondary {
+    background: #fff;
+    color: #1a73e8;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Roboto', sans-serif;
+    transition: background 0.2s;
+  }
+
+  .btn-secondary:hover { background: #f1f3f4; }
+
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #5f6368;
+  }
+
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-title { font-size: 18px; color: #202124; margin-bottom: 8px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #323232;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s, transform 0.3s;
+    max-width: 320px;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ANIMATION */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card { animation: fadeIn 0.3s ease forwards; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="nav-brand">
+    <div class="nav-logo">BM</div>
+    <div>
+      <div class="nav-title">BM621 Study Game</div>
+      <div class="nav-subtitle">Richfield Business Management</div>
+    </div>
+  </div>
+  <div class="nav-stats">
+    <div class="stat-item">
+      <div class="stat-value" id="total-score">0</div>
+      <div class="stat-label">Correct</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="total-attempted">0</div>
+      <div class="stat-label">Attempted</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="accuracy-pct">0%</div>
+      <div class="stat-label">Accuracy</div>
+    </div>
+  </div>
+</nav>
+
+<div class="app-body">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section-title">Navigation</div>
+    <button class="sidebar-btn" onclick="showView('home')">🏠 &nbsp;Dashboard</button>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-title">Topics</div>
+    <button class="topic-btn active" id="btn-t1" onclick="selectTopic(1)">
+      <div class="topic-icon">🌍</div>
+      <div class="topic-info">
+        <div class="topic-name">Topic 1: Business World</div>
+        <div class="topic-meta">15 questions</div>
+        <div class="topic-progress-bar"><div class="topic-progress-fill" id="prog-t1" style="width:0%"></div></div>
+      </div>
+    </button>
+    <button class="topic-btn" id="btn-t2" onclick="selectTopic(2)">
+      <div class="topic-icon">🌐</div>
+      <div class="topic-info">
+        <div class="topic-name">Topic 2: Business Environment</div>
+        <div class="topic-meta">15 questions</div>
+        <div class="topic-progress-bar"><div class="topic-progress-fill" id="prog-t2" style="width:0%"></div></div>
+      </div>
+    </button>
+    <button class="topic-btn" id="btn-t3" onclick="selectTopic(3)">
+      <div class="topic-icon">💡</div>
+      <div class="topic-info">
+        <div class="topic-name">Topic 3: Entrepreneurship</div>
+        <div class="topic-meta">15 questions</div>
+        <div class="topic-progress-bar"><div class="topic-progress-fill" id="prog-t3" style="width:0%"></div></div>
+      </div>
+    </button>
+    <button class="topic-btn" id="btn-t4" onclick="selectTopic(4)">
+      <div class="topic-icon">🏢</div>
+      <div class="topic-info">
+        <div class="topic-name">Topic 4: Establishing Business</div>
+        <div class="topic-meta">15 questions</div>
+        <div class="topic-progress-bar"><div class="topic-progress-fill" id="prog-t4" style="width:0%"></div></div>
+      </div>
+    </button>
+    <button class="topic-btn" id="btn-t5" onclick="selectTopic(5)">
+      <div class="topic-icon">📊</div>
+      <div class="topic-info">
+        <div class="topic-name">Topic 5: General Management</div>
+        <div class="topic-meta">15 questions</div>
+        <div class="topic-progress-bar"><div class="topic-progress-fill" id="prog-t5" style="width:0%"></div></div>
+      </div>
+    </button>
+    <div class="sidebar-divider"></div>
+    <button class="sidebar-btn" onclick="resetAll()">🔄 &nbsp;Reset All Progress</button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- HOME VIEW -->
+    <div class="view active" id="view-home">
+      <div class="page-header">
+        <div class="page-breadcrumb">BM621 Study Game › Dashboard</div>
+        <h1 class="page-title">Welcome to the Study Game</h1>
+        <p class="page-description">Test your knowledge across 5 topics with 75 thumb card questions. Each topic has 7 Easy, 5 Medium, and 3 Hard questions.</p>
+      </div>
+
+      <div class="summary-cards">
+        <div class="summary-card">
+          <div class="summary-card-value" id="home-total">0</div>
+          <div class="summary-card-label">Total Correct</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-card-value" id="home-attempted">0</div>
+          <div class="summary-card-label">Attempted</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-card-value" id="home-accuracy">0%</div>
+          <div class="summary-card-label">Accuracy</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-card-value">75</div>
+          <div class="summary-card-label">Total Questions</div>
+        </div>
+      </div>
+
+      <h2 style="font-size:16px;font-weight:500;margin-bottom:16px;color:#202124;">Choose a Topic to Study</h2>
+      <div class="dashboard-grid" id="dash-grid"></div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="selectTopic(1)">Start Topic 1 →</button>
+        <button class="btn-secondary" onclick="resetAll()">Reset All Progress</button>
+      </div>
+    </div>
+
+    <!-- QUIZ VIEW -->
+    <div class="view" id="view-quiz">
+      <div class="page-header">
+        <div class="page-breadcrumb" id="quiz-breadcrumb">BM621 › Topic 1</div>
+        <h1 class="page-title" id="quiz-title">Topic 1: The Business World</h1>
+        <p class="page-description" id="quiz-desc">Test your knowledge on the business world, factors of production, economic systems, and stakeholders.</p>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="showView('home')">← Dashboard</button>
+        <button class="btn-secondary" onclick="resetTopic()">Reset Topic</button>
+      </div>
+
+      <div class="topic-chips" id="topic-chips"></div>
+
+      <div class="filter-bar">
+        <span class="filter-label">Filter by difficulty:</span>
+        <button class="diff-chip active-all" id="filter-all" onclick="setFilter('all')">All</button>
+        <button class="diff-chip" id="filter-easy" onclick="setFilter('easy')">🟢 Easy (7)</button>
+        <button class="diff-chip" id="filter-medium" onclick="setFilter('medium')">🟡 Medium (5)</button>
+        <button class="diff-chip" id="filter-hard" onclick="setFilter('hard')">🔴 Hard (3)</button>
+      </div>
+
+      <div class="question-grid" id="question-grid"></div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== DATA =====================
+const topics = [
+  {
+    id: 1,
+    name: "Topic 1: The Business World",
+    shortName: "Business World",
+    icon: "🌍",
+    desc: "Test your knowledge on the business world, factors of production, economic systems, Maslow's hierarchy and stakeholders.",
+    questions: [
+      // EASY (1-7)
+      { id:1, diff:"easy", q:"Which factor of production refers to the physical and mental talents of people employed to create products and services?", options:["Capital","Labor","Natural Resources"], correct:1 },
+      { id:2, diff:"easy", q:"What is the primary financial reward an entrepreneur receives for taking business risks?", options:["Salary","Interest","Profit"], correct:2 },
+      { id:3, diff:"easy", q:"Which of the following is an example of an intangible service (not a product)?", options:["A car","A refrigerator","Insurance"], correct:2 },
+      { id:4, diff:"easy", q:"What does a business transform resources into?", options:["More resources","Products and services","Tax payments"], correct:1 },
+      { id:5, diff:"easy", q:"Which economic system allows private individuals to own property and earn profits freely?", options:["Command economy","Free-market economy","Socialism"], correct:1 },
+      { id:6, diff:"easy", q:"Which task of business involves providing equal employment opportunities to all members of society?", options:["Financial task","Environmental task","Social task"], correct:2 },
+      { id:7, diff:"easy", q:"What are the FOUR basic factors of production?", options:["Land, Labor, Capital, Entrepreneurship","Land, Money, People, Technology","Products, Services, Profit, Loss"], correct:0 },
+      // MEDIUM (8-12)
+      { id:8, diff:"medium", q:"In which economic system does the state own and control all factors of production with NO private competition?", options:["Free-market economy","Command economy","Mixed economy"], correct:1 },
+      { id:9, diff:"medium", q:"Which economic system is described as a compromise between a pure market and a pure command economy, where the state owns principal industries?", options:["Capitalism","Socialism","Mixed economy"], correct:1 },
+      { id:10, diff:"medium", q:"Which stakeholder group expects the business to pay interest on loans and reduce the size of loans over time?", options:["Shareholders","Banks","Trade unions"], correct:1 },
+      { id:11, diff:"medium", q:"What does 'consumerism' protect consumers against in the business world?", options:["High salaries","Unsafe products and malpractices","Environmental pollution"], correct:1 },
+      { id:12, diff:"medium", q:"Which of the following BEST describes 'business ethics' as discussed in Topic 1?", options:["Social responsibility towards the environment","The ethical behavior of managers and executives","Government regulations for businesses"], correct:1 },
+      // HARD (13-15)
+      { id:13, diff:"hard", q:"According to Maslow's hierarchy of needs, which level of need must be satisfied LAST (at the top of the pyramid)?", options:["Security needs","Social needs (love, recognition)","Self-realization needs"], correct:2 },
+      { id:14, diff:"hard", q:"Why did the command economy FAIL in most countries that adopted it, according to the guide?", options:["Because it encouraged too much competition","Because it robbed individuals of the initiative to produce goods and services","Because the state had no control over pricing"], correct:1 },
+      { id:15, diff:"hard", q:"Which characteristic of natural resources (land) makes it a unique and scarce factor of production?", options:["It can be manufactured when needed","Its supply cannot be increased","It generates automatic profit"], correct:1 },
+    ]
+  },
+  {
+    id: 2,
+    name: "Topic 2: The Business Environment",
+    shortName: "Business Environment",
+    icon: "🌐",
+    desc: "Explore the micro, market, and macro environments, PESTEL analysis, Porter's Five Forces, and SWOT.",
+    questions: [
+      // EASY (1-7)
+      { id:1, diff:"easy", q:"Which environment is under the DIRECT and COMPLETE control of management?", options:["Micro-environment","Market environment","Macro-environment"], correct:0 },
+      { id:2, diff:"easy", q:"What does the letter 'E' in PESTEL analysis stand for?", options:["Entrepreneurship","Economic","External"], correct:1 },
+      { id:3, diff:"easy", q:"Which environment consists of competitors, suppliers, consumers, and intermediaries?", options:["Micro-environment","Market/Task environment","Macro-environment"], correct:1 },
+      { id:4, diff:"easy", q:"What does the letter 'S' in PESTEL analysis stand for?", options:["Strategy","Social","Suppliers"], correct:1 },
+      { id:5, diff:"easy", q:"Which analysis tool uses Strengths, Weaknesses, Opportunities, and Threats?", options:["PESTEL","SWOT","Porter's Five Forces"], correct:1 },
+      { id:6, diff:"easy", q:"Demographic change, urbanization, and consumerism are examples of which macro-environment variable?", options:["Technological environment","Social environment","Economic environment"], correct:1 },
+      { id:7, diff:"easy", q:"Which of the following is an example of an external micro-environment variable that businesses CANNOT control?", options:["Company goals","Organizational structure","Competitors"], correct:2 },
+      // MEDIUM (8-12)
+      { id:8, diff:"medium", q:"What does the 'market environment' also referred to as in business management?", options:["The command environment","The task environment","The macro environment"], correct:1 },
+      { id:9, diff:"medium", q:"Which of Porter's Five Forces refers to the threat posed by companies offering similar products at lower prices?", options:["Bargaining power of suppliers","Availability of substitute products","Bargaining power of buyers"], correct:1 },
+      { id:10, diff:"medium", q:"Which characteristic of the business environment refers to the INCREASING unpredictability and rate of change?", options:["Environmental complexity","Increasing instability","Environmental uncertainty"], correct:1 },
+      { id:11, diff:"medium", q:"Netflix investing in data analytics to understand customer preferences is an example of managing which type of environmental factor?", options:["Physical environment","Socio-cultural factors","Technological and consumer preference changes"], correct:2 },
+      { id:12, diff:"medium", q:"Which macro-environment sub-environment includes inflation rates, exchange rates, and monetary policy?", options:["Social environment","Economic environment","Political environment"], correct:1 },
+      // HARD (13-15)
+      { id:13, diff:"hard", q:"According to Porter's Five Forces, which of the following is NOT one of the five competitive forces in an industry?", options:["The possibility of new entrants","The bargaining power of the government","The availability of substitute products"], correct:1 },
+      { id:14, diff:"hard", q:"What is the difference between an 'environmental opportunity' and an 'environmental threat'?", options:["An opportunity is internal; a threat is external","An opportunity is a favorable trend to exploit; a threat is an unfavorable trend that can lead to failure","An opportunity comes from competitors; a threat comes from suppliers"], correct:1 },
+      { id:15, diff:"hard", q:"Which characteristic of the business environment describes the fact that a change in one external factor (like currency values) can trigger changes in multiple other factors?", options:["Environmental complexity","Environmental uncertainty","Environmental factors are interrelated"], correct:2 },
+    ]
+  },
+  {
+    id: 3,
+    name: "Topic 3: Entrepreneurship",
+    shortName: "Entrepreneurship",
+    icon: "💡",
+    desc: "Explore entrepreneurial traits, the entrepreneurial process, types of entrepreneurs, and small business roles.",
+    questions: [
+      // EASY (1-7)
+      { id:1, diff:"easy", q:"What is the PRIMARY reward an entrepreneur receives for taking risks and providing products/services?", options:["A salary","Interest payments","Profit"], correct:2 },
+      { id:2, diff:"easy", q:"Which type of entrepreneur starts a business based on a sport, hobby, or passion?", options:["Serial entrepreneur","Lifestyle entrepreneur","Social entrepreneur"], correct:1 },
+      { id:3, diff:"easy", q:"Which factor of production does entrepreneurship MOBILIZE to meet the needs of society?", options:["Only capital","Only natural resources","The other three factors: land, labor, and capital"], correct:2 },
+      { id:4, diff:"easy", q:"What is the FIRST phase in the entrepreneurial process?", options:["Developing a business plan","Identifying and evaluating the opportunity","Managing the enterprise"], correct:1 },
+      { id:5, diff:"easy", q:"A 'serial entrepreneur' is best described as someone who:", options:["Works for the government","Constantly starts new companies based on new ideas","Only focuses on social problems"], correct:1 },
+      { id:6, diff:"easy", q:"Which of the following is an example of FINANCIAL resources needed to start a business?", options:["Management team","Cash or bank overdraft","Office equipment"], correct:1 },
+      { id:7, diff:"easy", q:"What is entrepreneurship described as in the context of economic growth?", options:["A guaranteed path to wealth","The essential source of economic growth and social development","A government-controlled activity"], correct:1 },
+      // MEDIUM (8-12)
+      { id:8, diff:"medium", q:"A person who has innovative ideas for social change and dedicates their time to addressing inequality is called a:", options:["Serial entrepreneur","Lifestyle entrepreneur","Social entrepreneur"], correct:2 },
+      { id:9, diff:"medium", q:"Which entrepreneurial skill involves understanding how a business fits within the marketplace and how it delivers value to customers?", options:["Financial skills","Strategy skills","Project management skills"], correct:1 },
+      { id:10, diff:"medium", q:"According to the guide, what is the MOST IMPORTANT reason why a feasibility study is conducted?", options:["To write the business plan","To find out if a business opportunity can be turned into a successful venture","To determine the legal form of ownership"], correct:1 },
+      { id:11, diff:"medium", q:"In South Africa, a small or medium enterprise (SME) is defined as having fewer than how many employees?", options:["500","100","200"], correct:2 },
+      { id:12, diff:"medium", q:"Which of the following is a DISADVANTAGE of buying an existing business?", options:["There is an established customer base","Employees are inherited rather than chosen","Inventory and equipment are already in place"], correct:1 },
+      // HARD (13-15)
+      { id:13, diff:"hard", q:"Which psychological trait describes an entrepreneur's STRONG belief that the outcome of events is determined by their OWN actions, not external forces?", options:["Achievement motivation","Internal locus of control","External locus of control"], correct:1 },
+      { id:14, diff:"hard", q:"What is the KEY difference between an 'opportunity' and a 'good idea' in the entrepreneurial context?", options:["A good idea always has market potential; an opportunity does not","The market determines whether an idea has potential as an investment opportunity","An opportunity requires no resources; a good idea does"], correct:1 },
+      { id:15, diff:"hard", q:"According to researchers, which trait is the MOST researched and MOST important characteristic that distinguishes entrepreneurs from non-entrepreneurs?", options:["Risk-taking ability","Innovation and creativity","Achievement motivation"], correct:2 },
+    ]
+  },
+  {
+    id: 4,
+    name: "Topic 4: Establishing the Business",
+    shortName: "Establishing Business",
+    icon: "🏢",
+    desc: "Understand the different forms of business ownership in South Africa and the components of a business plan.",
+    questions: [
+      // EASY (1-7)
+      { id:1, diff:"easy", q:"Which form of business ownership is owned AND managed by a SINGLE person who bears all the liability?", options:["Sole Proprietorship","Partnership","Close Corporation"], correct:0 },
+      { id:2, diff:"easy", q:"What is the MAXIMUM number of partners allowed in a Partnership in South Africa?", options:["5","10","20"], correct:2 },
+      { id:3, diff:"easy", q:"What does a business plan primarily describe?", options:["Only the financial statements","A business and its plans for the next 1 to 3 years","The legal form of ownership chosen"], correct:1 },
+      { id:4, diff:"easy", q:"Which form of ownership has its name always ending in the letters 'CC'?", options:["Private Company","Close Corporation","Public Company"], correct:1 },
+      { id:5, diff:"easy", q:"In a Public Company, how are shares made available to the public?", options:["Through direct sale by the owner","By listing on the stock exchange (JSE)","Through private placement only"], correct:1 },
+      { id:6, diff:"easy", q:"What is the MAIN advantage of a Sole Proprietorship?", options:["Limited liability for debts","The owner gets all the profits and makes all the decisions","Easy to raise large amounts of capital"], correct:1 },
+      { id:7, diff:"easy", q:"Who typically writes the business plan for a new start-up?", options:["Only the investors","The entrepreneur/owner, often to secure financing","The government"], correct:1 },
+      // MEDIUM (8-12)
+      { id:8, diff:"medium", q:"What is the MAXIMUM number of members allowed in a Close Corporation (CC)?", options:["5","10","50"], correct:1 },
+      { id:9, diff:"medium", q:"Which factor distinguishes a PRIVATE Company from a PUBLIC Company?", options:["A private company has unlimited shareholders","Shares of a private company CANNOT be sold to the general public","A private company can list on the JSE"], correct:1 },
+      { id:10, diff:"medium", q:"Which of the following is a USE of a business plan?", options:["To avoid paying taxes","To acquire loans from financial institutions","To reduce the number of employees"], correct:1 },
+      { id:11, diff:"medium", q:"In a franchise arrangement, what is the person who BUYS the rights to use the franchise called?", options:["The franchisor","The franchisee","The sole proprietor"], correct:1 },
+      { id:12, diff:"medium", q:"Which of the following is a MAIN DISADVANTAGE of a Partnership?", options:["Profits must be shared","Decisions cannot be made quickly as all partners must be consulted","There is limited liability for all partners"], correct:1 },
+      // HARD (13-15)
+      { id:13, diff:"hard", q:"Which legal entity requires its name to end in 'Proprietary Limited' or '(Pty) Ltd' and restricts share transfers to the public?", options:["Public Company","Private Company","Close Corporation"], correct:1 },
+      { id:14, diff:"hard", q:"According to the guide, what is a key NEGATIVE effect of a business plan that might cause an entrepreneur to decide NOT to plan?", options:["It is too expensive to print","A changing environment can make the business plan outdated and difficult to predict","Banks do not accept business plans"], correct:1 },
+      { id:15, diff:"hard", q:"Which form of business ownership requires at LEAST SEVEN shareholders and allows capital to be raised by selling shares to the general public?", options:["Close Corporation","Private Company","Public Company"], correct:2 },
+    ]
+  },
+  {
+    id: 5,
+    name: "Topic 5: General Management & Agile",
+    shortName: "General Management",
+    icon: "📊",
+    desc: "Understand management functions (POLC), management levels, and the skills required at each level.",
+    questions: [
+      // EASY (1-7)
+      { id:1, diff:"easy", q:"Which management function involves setting goals and deciding on the best course of action to achieve them?", options:["Planning","Organizing","Controlling"], correct:0 },
+      { id:2, diff:"easy", q:"Which management function involves arranging resources and tasks to achieve organizational goals?", options:["Planning","Organizing","Leading"], correct:1 },
+      { id:3, diff:"easy", q:"Which management function involves monitoring performance and taking corrective action when necessary?", options:["Planning","Leading","Controlling"], correct:2 },
+      { id:4, diff:"easy", q:"What does the acronym 'POLC' stand for in management?", options:["Planning, Organizing, Leading, Controlling","Process, Operations, Labor, Capital","People, Objectives, Logistics, Compliance"], correct:0 },
+      { id:5, diff:"easy", q:"Which management level is responsible for the DAY-TO-DAY supervision of employees?", options:["Top management","Middle management","Lower/First-line management"], correct:2 },
+      { id:6, diff:"easy", q:"Management is best defined as the process of:", options:["Producing goods and selling them at a profit","Coordinating resources to achieve organizational goals efficiently and effectively","Making laws and regulations for businesses"], correct:1 },
+      { id:7, diff:"easy", q:"Which management function is most associated with guiding and motivating employees?", options:["Planning","Controlling","Leading"], correct:2 },
+      // MEDIUM (8-12)
+      { id:8, diff:"medium", q:"Which type of management skill is MOST critically required at the TOP management level?", options:["Technical skills","Conceptual skills","Interpersonal skills"], correct:1 },
+      { id:9, diff:"medium", q:"Which type of management skill is MOST important for LOWER (first-line) management?", options:["Conceptual skills","Strategic skills","Technical skills"], correct:2 },
+      { id:10, diff:"medium", q:"In an AGILE management context, which of the following is a KEY principle?", options:["Rigid long-term planning with no changes","Continuous improvement, adaptability, and responding to change","Strict hierarchical control with no team input"], correct:1 },
+      { id:11, diff:"medium", q:"Which of the following BEST describes the 'organizing' management function?", options:["Setting the vision and long-term goals","Grouping activities, assigning responsibilities, and allocating resources","Monitoring performance against set standards"], correct:1 },
+      { id:12, diff:"medium", q:"What is the PRIMARY difference between a manager and an entrepreneur according to the guide?", options:["Managers earn more money than entrepreneurs","Entrepreneurs assume the risk of loss; managers assume relatively little risk","Managers make all strategic decisions; entrepreneurs do not"], correct:1 },
+      // HARD (13-15)
+      { id:13, diff:"hard", q:"Which management function creates the FOUNDATION for all other management functions and must logically come FIRST?", options:["Organizing","Leading","Planning"], correct:2 },
+      { id:14, diff:"hard", q:"In management theory, 'conceptual skills' at the top level refer to the ability to:", options:["Operate machinery and technical systems","See the organization as a whole and understand how its parts interrelate in the broader environment","Communicate effectively with frontline employees"], correct:1 },
+      { id:15, diff:"hard", q:"A control system established to quickly identify and resolve operational problems is part of which phase of the entrepreneurial/management process?", options:["Planning phase","Organizing phase","Managing the enterprise phase"], correct:2 },
+    ]
+  }
+];
+
+// ===================== STATE =====================
+let state = {
+  currentTopic: 1,
+  currentFilter: 'all',
+  answered: {}, // key: "topicId-qId" => { correct: bool }
+};
+
+function getKey(topicId, qId) { return `${topicId}-${qId}`; }
+
+function getTopicStats(topicId) {
+  const topic = topics.find(t => t.id === topicId);
+  let attempted = 0, correct = 0;
+  topic.questions.forEach(q => {
+    const k = getKey(topicId, q.id);
+    if (state.answered[k] !== undefined) {
+      attempted++;
+      if (state.answered[k].correct) correct++;
+    }
+  });
+  return { attempted, correct, total: topic.questions.length };
+}
+
+function getTotalStats() {
+  let attempted = 0, correct = 0;
+  topics.forEach(t => {
+    const s = getTopicStats(t.id);
+    attempted += s.attempted;
+    correct += s.correct;
+  });
+  return { attempted, correct, total: 75 };
+}
+
+function updateNavStats() {
+  const s = getTotalStats();
+  document.getElementById('total-score').textContent = s.correct;
+  document.getElementById('total-attempted').textContent = s.attempted;
+  const pct = s.attempted === 0 ? 0 : Math.round((s.correct / s.attempted) * 100);
+  document.getElementById('accuracy-pct').textContent = pct + '%';
+}
+
+function updateSidebarProgress() {
+  topics.forEach(t => {
+    const s = getTopicStats(t.id);
+    const pct = (s.attempted / s.total) * 100;
+    const el = document.getElementById(`prog-t${t.id}`);
+    if (el) el.style.width = pct + '%';
+  });
+}
+
+// ===================== VIEWS =====================
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${name}`).classList.add('active');
+  if (name === 'home') renderDashboard();
+}
+
+function selectTopic(id) {
+  state.currentTopic = id;
+  state.currentFilter = 'all';
+
+  // Update sidebar active
+  document.querySelectorAll('.topic-btn').forEach((b,i) => {
+    b.classList.toggle('active', i+1 === id);
+  });
+
+  // Update filter chips
+  document.querySelectorAll('.diff-chip').forEach(c => {
+    c.classList.remove('active-all','active-easy','active-medium','active-hard');
+  });
+  document.getElementById('filter-all').classList.add('active-all');
+
+  // Set topic chips
+  const chipsEl = document.getElementById('topic-chips');
+  chipsEl.innerHTML = topics.map(t =>
+    `<button class="chip ${t.id === id ? 'active' : ''}" onclick="selectTopic(${t.id})">${t.shortName}</button>`
+  ).join('');
+
+  // Update header
+  const topic = topics.find(t => t.id === id);
+  document.getElementById('quiz-breadcrumb').textContent = `BM621 › ${topic.name}`;
+  document.getElementById('quiz-title').textContent = topic.name;
+  document.getElementById('quiz-desc').textContent = topic.desc;
+
+  renderCards();
+  showView('quiz');
+}
+
+// ===================== FILTER =====================
+function setFilter(f) {
+  state.currentFilter = f;
+  document.querySelectorAll('.diff-chip').forEach(c => {
+    c.classList.remove('active-all','active-easy','active-medium','active-hard');
+  });
+  if (f === 'all') document.getElementById('filter-all').classList.add('active-all');
+  if (f === 'easy') document.getElementById('filter-easy').classList.add('active-easy');
+  if (f === 'medium') document.getElementById('filter-medium').classList.add('active-medium');
+  if (f === 'hard') document.getElementById('filter-hard').classList.add('active-hard');
+  renderCards();
+}
+
+// ===================== RENDER CARDS =====================
+function renderCards() {
+  const topic = topics.find(t => t.id === state.currentTopic);
+  const grid = document.getElementById('question-grid');
+  const questions = state.currentFilter === 'all'
+    ? topic.questions
+    : topic.questions.filter(q => q.diff === state.currentFilter);
+
+  if (questions.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔍</div><div class="empty-title">No questions found</div><p>Try a different filter.</p></div>`;
+    return;
+  }
+
+  let count = 0;
+  grid.innerHTML = questions.map((q, idx) => {
+    count++;
+    const k = getKey(state.currentTopic, q.id);
+    const answered = state.answered[k];
+    const diffLabel = q.diff.charAt(0).toUpperCase() + q.diff.slice(1);
+    const options = shuffleOptions(q.options, q.correct);
+
+    let statusText = '⬜ Not answered';
+    let statusClass = 'status-pending';
+    if (answered !== undefined) {
+      if (answered.correct) { statusText = '✅ Correct!'; statusClass = 'status-correct'; }
+      else { statusText = '❌ Incorrect'; statusClass = 'status-wrong'; }
+    }
+
+    const optBtns = options.map((opt, i) => {
+      let cls = '';
+      const label = String.fromCharCode(65 + i);
+      if (answered !== undefined) {
+        if (i === options.shuffledCorrect) cls = answered.chosen === i ? 'correct' : 'reveal-correct';
+        else if (i === answered.chosen && !answered.correct) cls = 'wrong';
+      }
+      const dis = answered !== undefined ? 'disabled' : '';
+      return `<button class="option-btn ${cls}" ${dis} onclick="answer(${state.currentTopic}, ${q.id}, ${i}, '${k}')">
+        <span class="option-label">${label}</span>
+        <span>${opt.text}</span>
+      </button>`;
+    }).join('');
+
+    const resetBtnHtml = answered !== undefined
+      ? `<button class="reset-btn-card" onclick="resetCard('${k}')">Reset</button>`
+      : '';
+
+    return `<div class="card" id="card-${k}" style="animation-delay:${idx * 0.04}s">
+      <div class="card-header">
+        <span class="card-number">Q${count} of ${questions.length}</span>
+        <span class="diff-badge diff-${q.diff}">${diffLabel}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-question">${q.q}</div>
+        <div class="options" id="opts-${k}">${optBtns}</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-status ${statusClass}">${statusText}</span>
+        ${resetBtnHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Store shuffled correct indexes for each card
+  questions.forEach(q => {
+    const k = getKey(state.currentTopic, q.id);
+    const shuffled = shuffleOptions(q.options, q.correct);
+    window._shuffleMap = window._shuffleMap || {};
+    window._shuffleMap[k] = shuffled.shuffledCorrect;
+  });
+}
+
+// Deterministic shuffle (same order per session per question)
+function shuffleOptions(options, correct) {
+  // Use a fixed seed based on options content for consistency
+  const items = options.map((text, i) => ({ text, isCorrect: i === correct }));
+  // Shuffle with a deterministic but varied order
+  const seed = options.join('').length % 3;
+  const rotated = [...items.slice(seed), ...items.slice(0, seed)];
+  const shuffledCorrect = rotated.findIndex(o => o.isCorrect);
+  rotated.shuffledCorrect = shuffledCorrect;
+  return rotated;
+}
+
+// ===================== ANSWER =====================
+function answer(topicId, qId, chosen, key) {
+  const shuffledCorrect = window._shuffleMap && window._shuffleMap[key] !== undefined
+    ? window._shuffleMap[key]
+    : chosen;
+
+  const isCorrect = chosen === shuffledCorrect;
+  state.answered[key] = { correct: isCorrect, chosen };
+
+  // Update buttons
+  const optsEl = document.getElementById(`opts-${key}`);
+  if (!optsEl) return;
+  const btns = optsEl.querySelectorAll('.option-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === shuffledCorrect) {
+      if (chosen === i) btn.classList.add('correct');
+      else btn.classList.add('reveal-correct');
+    } else if (i === chosen && !isCorrect) {
+      btn.classList.add('wrong');
+    }
+  });
+
+  // Update footer
+  const card = document.getElementById(`card-${key}`);
+  if (card) {
+    const footer = card.querySelector('.card-footer');
+    const statusEl = footer.querySelector('.card-status');
+    if (isCorrect) {
+      statusEl.textContent = '✅ Correct!';
+      statusEl.className = 'card-status status-correct';
+    } else {
+      statusEl.textContent = '❌ Incorrect';
+      statusEl.className = 'card-status status-wrong';
+    }
+    footer.innerHTML += `<button class="reset-btn-card" onclick="resetCard('${key}')">Reset</button>`;
+  }
+
+  updateNavStats();
+  updateSidebarProgress();
+  showToast(isCorrect ? '✅ Correct! Well done!' : '❌ Incorrect. Try again after resetting!');
+  updateDashboardCards();
+}
+
+function resetCard(key) {
+  delete state.answered[key];
+  updateNavStats();
+  updateSidebarProgress();
+  renderCards();
+}
+
+function resetTopic() {
+  const topic = topics.find(t => t.id === state.currentTopic);
+  topic.questions.forEach(q => {
+    delete state.answered[getKey(state.currentTopic, q.id)];
+  });
+  updateNavStats();
+  updateSidebarProgress();
+  renderCards();
+  showToast('Topic progress reset!');
+}
+
+function resetAll() {
+  state.answered = {};
+  updateNavStats();
+  updateSidebarProgress();
+  if (document.getElementById('view-quiz').classList.contains('active')) renderCards();
+  renderDashboard();
+  showToast('All progress has been reset!');
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard() {
+  updateDashboardCards();
+  const s = getTotalStats();
+  document.getElementById('home-total').textContent = s.correct;
+  document.getElementById('home-attempted').textContent = s.attempted;
+  const pct = s.attempted === 0 ? 0 : Math.round((s.correct/s.attempted)*100);
+  document.getElementById('home-accuracy').textContent = pct + '%';
+}
+
+function updateDashboardCards() {
+  const grid = document.getElementById('dash-grid');
+  if (!grid) return;
+  grid.innerHTML = topics.map(t => {
+    const s = getTopicStats(t.id);
+    const pct = Math.round((s.attempted / s.total) * 100);
+    const accPct = s.attempted === 0 ? 0 : Math.round((s.correct / s.attempted) * 100);
+    return `<div class="dash-card" onclick="selectTopic(${t.id})">
+      <div class="dash-card-icon">${t.icon}</div>
+      <div class="dash-card-title">${t.shortName}</div>
+      <div class="dash-card-subtitle">${s.attempted}/${s.total} answered · ${accPct}% accuracy</div>
+      <div class="dash-progress">
+        <div class="dash-progress-bar"><div class="dash-progress-fill" style="width:${pct}%"></div></div>
+        <span class="dash-progress-text">${pct}%</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Update home stats
+  const s = getTotalStats();
+  const el1 = document.getElementById('home-total');
+  const el2 = document.getElementById('home-attempted');
+  const el3 = document.getElementById('home-accuracy');
+  if (el1) el1.textContent = s.correct;
+  if (el2) el2.textContent = s.attempted;
+  if (el3) {
+    const pct = s.attempted === 0 ? 0 : Math.round((s.correct/s.attempted)*100);
+    el3.textContent = pct + '%';
+  }
+}
+
+// ===================== TOAST =====================
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===================== INIT =====================
+window.addEventListener('DOMContentLoaded', () => {
+  renderDashboard();
+  selectTopic(1);
+  showView('home');
+  updateNavStats();
+  updateSidebarProgress();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SYS-621 // Quiz Lab Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<style>
+/* =========================================================
+   CSS CUSTOM PROPERTIES — CYBER DARK THEME
+   ========================================================= */
+:root {
+  --bg:          #05070a;
+  --bg-2:        #090d14;
+  --bg-3:        #0d1420;
+  --card:        rgba(13,20,32,0.82);
+  --card-border: #212c42;
+  --card-hover:  rgba(155,227,34,0.06);
+  --green:       #9be322;
+  --green-dim:   rgba(155,227,34,0.15);
+  --green-glow:  rgba(155,227,34,0.35);
+  --red:         #ff4b2b;
+  --red-dim:     rgba(255,75,43,0.15);
+  --red-glow:    rgba(255,75,43,0.35);
+  --blue:        #3d9cf5;
+  --blue-dim:    rgba(61,156,245,0.15);
+  --yellow:      #f5c842;
+  --yellow-dim:  rgba(245,200,66,0.15);
+  --text-1:      #e8edf5;
+  --text-2:      #8a9ab8;
+  --text-3:      #4a5a78;
+  --text-mono:   #a8d8ff;
+  --mono:        'JetBrains Mono', 'Source Code Pro', monospace;
+  --sans:        'Inter', 'Ubuntu', sans-serif;
+  --radius:      12px;
+  --radius-lg:   18px;
+  --radius-pill: 100px;
+  --trans:       all 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* =========================================================
+   RESET & BASE
+   ========================================================= */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text-1);
+  min-height:100vh;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg-2);}
+::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--green);}
+
+/* =========================================================
+   ANIMATED GRID BACKGROUND
+   ========================================================= */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(155,227,34,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(155,227,34,0.025) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* =========================================================
+   TOP NAV BAR
+   ========================================================= */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:200;
+  background:rgba(5,7,10,0.92);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--card-border);
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:0 28px;
+  height:58px;
+}
+.topbar__logo{
+  display:flex;align-items:center;gap:10px;text-decoration:none;
+}
+.topbar__hex{
+  width:34px;height:34px;
+  background:var(--green);
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:#05070a;
+  flex-shrink:0;
+}
+.topbar__brand{
+  font-family:var(--mono);font-size:14px;color:var(--green);font-weight:500;letter-spacing:1px;
+}
+.topbar__brand span{color:var(--text-3);}
+.topbar__spacer{flex:1;}
+/* XP + Streak */
+.hud-items{display:flex;align-items:center;gap:12px;}
+.hud-chip{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg-3);border:1px solid var(--card-border);
+  border-radius:var(--radius-pill);padding:5px 12px;
+  font-family:var(--mono);font-size:12px;color:var(--text-2);
+}
+.hud-chip .val{color:var(--text-1);font-weight:700;}
+.hud-chip.xp-chip .val{color:var(--green);}
+.hud-chip.streak-chip .val{color:var(--yellow);}
+.hud-chip svg{width:14px;height:14px;flex-shrink:0;}
+/* Global Progress */
+.global-progress{
+  position:relative;height:3px;
+  background:var(--bg-3);border-bottom:1px solid var(--card-border);
+  overflow:visible;
+}
+.global-progress__bar{
+  height:100%;
+  background:linear-gradient(90deg,var(--green),#c8ff6a);
+  transition:width 0.5s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 0 10px var(--green-glow),0 0 20px rgba(155,227,34,0.2);
+  position:relative;
+}
+.global-progress__bar::after{
+  content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:8px;height:8px;background:var(--green);border-radius:50%;
+  box-shadow:0 0 8px var(--green);
+}
+
+/* =========================================================
+   SCREENS
+   ========================================================= */
+.screen{display:none;position:relative;z-index:1;}
+.screen.active{display:block;}
+
+/* =========================================================
+   HOME SCREEN — MISSION BRIEFING
+   ========================================================= */
+.home-wrap{max-width:1100px;margin:0 auto;padding:56px 24px 80px;}
+
+.home-hero{text-align:center;margin-bottom:64px;}
+.home-hero__tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  color:var(--green);letter-spacing:2px;text-transform:uppercase;
+  border:1px solid var(--green-glow);border-radius:var(--radius-pill);
+  padding:5px 16px;background:var(--green-dim);margin-bottom:24px;
+}
+.home-hero__tag::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 6px var(--green);
+  animation:blink 1.4s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.home-hero__title{
+  font-size:clamp(28px,4.5vw,52px);font-weight:800;
+  background:linear-gradient(135deg,#e8edf5 0%,#9be322 60%,#c8ff6a 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1.15;margin-bottom:16px;
+}
+.home-hero__sub{
+  font-size:15px;color:var(--text-2);max-width:520px;margin:0 auto;
+  font-family:var(--mono);letter-spacing:0.3px;
+}
+
+/* STAT STRIP */
+.stat-strip{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:56px;}
+.stat-pill{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg-3);border:1px solid var(--card-border);
+  border-radius:var(--radius-pill);padding:7px 16px;
+  font-family:var(--mono);font-size:12px;color:var(--text-2);
+}
+.stat-pill .dot{width:7px;height:7px;border-radius:50%;}
+.dot-e{background:var(--green);box-shadow:0 0 6px var(--green);}
+.dot-m{background:var(--yellow);box-shadow:0 0 6px var(--yellow);}
+.dot-h{background:var(--red);box-shadow:0 0 6px var(--red);}
+
+/* PATH CARDS */
+.path-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;}
+.path-card{
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-lg);
+  overflow:hidden;cursor:pointer;
+  transition:var(--trans);
+  backdrop-filter:blur(12px);
+  position:relative;
+}
+.path-card::before{
+  content:'';position:absolute;inset:0;border-radius:var(--radius-lg);
+  background:linear-gradient(135deg,var(--green-dim) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.3s;pointer-events:none;
+}
+.path-card:hover{
+  border-color:rgba(155,227,34,0.4);
+  transform:translateY(-4px);
+  box-shadow:0 12px 40px rgba(155,227,34,0.12),0 0 0 1px rgba(155,227,34,0.15);
+}
+.path-card:hover::before{opacity:1;}
+.path-card__top{padding:28px 28px 20px;}
+.path-card__icon-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.path-icon{
+  width:48px;height:48px;border-radius:var(--radius);
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid;
+}
+.pi-1{background:rgba(61,156,245,0.12);border-color:rgba(61,156,245,0.3);}
+.pi-2{background:rgba(155,227,34,0.1);border-color:rgba(155,227,34,0.25);}
+.pi-3{background:rgba(245,200,66,0.1);border-color:rgba(245,200,66,0.25);}
+.path-icon svg{width:24px;height:24px;}
+/* Progress ring */
+.prog-ring{position:relative;width:52px;height:52px;}
+.prog-ring svg{transform:rotate(-90deg);}
+.prog-ring__bg{fill:none;stroke:var(--card-border);stroke-width:3;}
+.prog-ring__fg{fill:none;stroke:var(--green);stroke-width:3;stroke-linecap:round;
+  stroke-dasharray:138;stroke-dashoffset:138;transition:stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1);}
+.prog-ring__pct{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:var(--mono);font-size:11px;color:var(--green);font-weight:700;
+}
+.path-card__badge{
+  font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:1px;
+  text-transform:uppercase;color:var(--text-3);
+  background:var(--bg-2);border:1px solid var(--card-border);
+  border-radius:var(--radius-pill);padding:3px 10px;
+}
+.path-card__title{font-size:17px;font-weight:700;color:var(--text-1);margin-bottom:8px;line-height:1.3;}
+.path-card__desc{font-size:13px;color:var(--text-2);line-height:1.6;}
+.path-card__footer{padding:16px 28px 24px;border-top:1px solid var(--card-border);}
+.diff-row{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.diff-badge{
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.5px;
+  border-radius:var(--radius-pill);padding:3px 10px;border:1px solid;
+}
+.db-e{color:var(--green);background:var(--green-dim);border-color:rgba(155,227,34,0.3);}
+.db-m{color:var(--yellow);background:var(--yellow-dim);border-color:rgba(245,200,66,0.3);}
+.db-h{color:var(--red);background:var(--red-dim);border-color:rgba(255,75,43,0.3);}
+.diff-badge .dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.path-card__cta{display:flex;align-items:center;justify-content:space-between;}
+.path-card__qcount{font-family:var(--mono);font-size:12px;color:var(--text-3);}
+.btn-start{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--green);color:#05070a;
+  border:none;border-radius:var(--radius-pill);
+  padding:9px 20px;font-size:13px;font-weight:700;
+  font-family:var(--sans);cursor:pointer;
+  transition:var(--trans);letter-spacing:0.3px;
+  box-shadow:0 0 16px var(--green-glow);
+}
+.btn-start:hover{background:#b5f53a;box-shadow:0 0 24px var(--green),0 0 40px rgba(155,227,34,0.3);}
+.btn-start svg{width:16px;height:16px;}
+
+/* =========================================================
+   QUIZ SCREEN
+   ========================================================= */
+.quiz-header{
+  background:rgba(5,7,10,0.9);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--card-border);padding:12px 24px;
+}
+.quiz-header__inner{
+  max-width:1280px;margin:0 auto;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.btn-back{
+  display:inline-flex;align-items:center;gap:5px;
+  background:none;border:1px solid var(--card-border);
+  border-radius:var(--radius-pill);padding:6px 14px;
+  font-family:var(--mono);font-size:12px;color:var(--text-2);
+  cursor:pointer;transition:var(--trans);
+}
+.btn-back:hover{border-color:var(--green);color:var(--green);}
+.btn-back svg{width:14px;height:14px;}
+.qh-info{flex:1;}
+.qh-topic{font-size:14px;font-weight:700;color:var(--text-1);}
+.qh-meta{font-family:var(--mono);font-size:11px;color:var(--text-3);margin-top:2px;}
+/* glow progress */
+.glow-progress{
+  background:rgba(5,7,10,0.9);
+  border-bottom:1px solid var(--card-border);padding:0 24px 10px;
+}
+.glow-progress__inner{
+  max-width:1280px;margin:0 auto;
+  display:flex;align-items:center;gap:16px;
+}
+.gp-label{font-family:var(--mono);font-size:11px;color:var(--text-3);white-space:nowrap;}
+.gp-track{
+  flex:1;height:8px;background:var(--bg-3);
+  border-radius:var(--radius-pill);overflow:hidden;
+  border:1px solid var(--card-border);
+}
+.gp-fill{
+  height:100%;background:linear-gradient(90deg,var(--green),#c8ff6a);
+  border-radius:var(--radius-pill);
+  transition:width 0.4s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 0 8px var(--green-glow);
+  position:relative;
+}
+.gp-pct{font-family:var(--mono);font-size:11px;color:var(--green);font-weight:700;white-space:nowrap;}
+
+/* QUIZ BODY LAYOUT */
+.quiz-body{
+  max-width:1280px;margin:0 auto;
+  display:grid;grid-template-columns:240px 1fr;
+  gap:20px;padding:20px 24px 60px;
+  align-items:start;
+}
+@media(max-width:860px){
+  .quiz-body{grid-template-columns:1fr;}
+  .task-panel{order:-1;}
+}
+
+/* TASK PANEL — left sidebar */
+.task-panel{position:sticky;top:130px;}
+.panel-card{
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius-lg);overflow:hidden;
+  backdrop-filter:blur(12px);margin-bottom:14px;
+}
+.panel-card__hdr{
+  padding:12px 14px;border-bottom:1px solid var(--card-border);
+  font-family:var(--mono);font-size:11px;color:var(--text-3);
+  letter-spacing:1px;text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;
+}
+.panel-card__hdr svg{width:13px;height:13px;color:var(--green);}
+.panel-card__body{padding:14px;}
+
+/* NODE GRID */
+.node-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.q-node{
+  width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  border-radius:var(--radius);border:1px solid var(--card-border);
+  color:var(--text-3);background:var(--bg-3);
+  cursor:pointer;transition:var(--trans);
+}
+.q-node:hover:not(.q-node--current){border-color:rgba(155,227,34,0.4);color:var(--green);}
+.q-node--current{
+  border-color:var(--green);color:#05070a;
+  background:var(--green);box-shadow:0 0 10px var(--green-glow);
+}
+.q-node--correct{
+  border-color:rgba(155,227,34,0.5);color:var(--green);
+  background:var(--green-dim);
+}
+.q-node--wrong{
+  border-color:rgba(255,75,43,0.5);color:var(--red);
+  background:var(--red-dim);
+}
+.q-node--answered{
+  border-color:rgba(61,156,245,0.4);color:var(--blue);
+  background:var(--blue-dim);
+}
+
+/* LEGEND */
+.legend{display:flex;flex-direction:column;gap:8px;}
+.legend-item{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--text-2);}
+.legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;border:1px solid;}
+.ld-unvisited{background:var(--bg-3);border-color:var(--card-border);}
+.ld-current{background:var(--green);border-color:var(--green);}
+.ld-answered{background:var(--blue-dim);border-color:rgba(61,156,245,0.4);}
+.ld-correct{background:var(--green-dim);border-color:rgba(155,227,34,0.5);}
+.ld-wrong{background:var(--red-dim);border-color:rgba(255,75,43,0.5);}
+
+/* SCORE PANEL */
+.score-display{text-align:center;padding:4px 0;}
+.score-display__val{
+  font-family:var(--mono);font-size:28px;font-weight:700;
+  color:var(--green);line-height:1;
+}
+.score-display__val span{font-size:14px;color:var(--text-3);}
+.score-display__lbl{font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:1px;margin-top:4px;}
+
+/* MAIN QUESTION AREA */
+.q-terminal{
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius-lg);overflow:hidden;
+  backdrop-filter:blur(12px);
+}
+/* Terminal top bar */
+.q-term-bar{
+  padding:10px 18px;border-bottom:1px solid var(--card-border);
+  display:flex;align-items:center;gap:10px;
+  background:rgba(5,7,10,0.5);
+}
+.term-dots{display:flex;gap:6px;}
+.term-dot{width:11px;height:11px;border-radius:50%;}
+.td-r{background:#ff5f57;}
+.td-y{background:#febc2e;}
+.td-g{background:#28c840;}
+.q-term-path{
+  font-family:var(--mono);font-size:11px;color:var(--text-3);
+  margin-left:8px;flex:1;
+}
+.q-term-path span{color:var(--green);}
+.q-badge-row{display:flex;gap:8px;}
+.q-badge{
+  font-family:var(--mono);font-size:10px;font-weight:500;
+  border-radius:var(--radius-pill);padding:3px 10px;border:1px solid;
+}
+.qb-easy{color:var(--green);background:var(--green-dim);border-color:rgba(155,227,34,0.3);}
+.qb-medium{color:var(--yellow);background:var(--yellow-dim);border-color:rgba(245,200,66,0.3);}
+.qb-hard{color:var(--red);background:var(--red-dim);border-color:rgba(255,75,43,0.3);}
+.qb-concept{color:var(--blue);background:var(--blue-dim);border-color:rgba(61,156,245,0.3);}
+
+/* Question content */
+.q-content{padding:24px 28px;}
+.q-num-row{
+  display:flex;align-items:center;gap:12px;margin-bottom:18px;
+}
+.q-num{
+  font-family:var(--mono);font-size:13px;font-weight:700;
+  color:var(--bg);background:var(--green);
+  border-radius:var(--radius);padding:4px 12px;
+  box-shadow:0 0 10px var(--green-glow);
+}
+.q-counter{font-family:var(--mono);font-size:12px;color:var(--text-3);}
+.q-text{
+  font-size:16px;font-weight:600;color:var(--text-1);
+  line-height:1.65;margin-bottom:24px;
+  font-family:var(--sans);
+}
+
+/* OPTIONS */
+.options-list{display:flex;flex-direction:column;gap:10px;}
+.opt-btn{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 16px;
+  border:1px solid var(--card-border);border-radius:var(--radius);
+  background:var(--bg-3);cursor:pointer;
+  transition:var(--trans);text-align:left;width:100%;
+  font-family:var(--sans);
+}
+.opt-btn:hover:not(.opt-disabled){
+  border-color:rgba(155,227,34,0.4);
+  background:rgba(155,227,34,0.05);
+}
+.opt-btn.opt-selected{
+  border-color:rgba(61,156,245,0.5);
+  background:var(--blue-dim);
+}
+.opt-btn.opt-correct{
+  border-color:rgba(155,227,34,0.6);
+  background:var(--green-dim);
+  box-shadow:0 0 12px rgba(155,227,34,0.1);
+}
+.opt-btn.opt-wrong{
+  border-color:rgba(255,75,43,0.5);
+  background:var(--red-dim);
+}
+.opt-btn.opt-disabled{cursor:default;}
+.opt-letter{
+  min-width:30px;height:30px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:12px;font-weight:700;
+  background:var(--bg-2);border:1px solid var(--card-border);
+  color:var(--text-2);flex-shrink:0;transition:var(--trans);
+}
+.opt-btn.opt-selected .opt-letter{background:var(--blue);border-color:var(--blue);color:#fff;}
+.opt-btn.opt-correct .opt-letter{background:var(--green);border-color:var(--green);color:#05070a;}
+.opt-btn.opt-wrong .opt-letter{background:var(--red);border-color:var(--red);color:#fff;}
+.opt-text{font-size:14px;color:var(--text-1);line-height:1.5;flex:1;}
+.opt-icon{flex-shrink:0;font-size:16px;}
+
+/* FEEDBACK BOX — Hacker Hint */
+.hacker-hint{
+  margin-top:18px;padding:14px 16px;border-radius:var(--radius);
+  display:none;border:1px solid;
+  font-family:var(--mono);font-size:12px;line-height:1.7;
+}
+.hacker-hint.show{display:block;}
+.hacker-hint.hint-correct{
+  border-color:rgba(155,227,34,0.3);background:rgba(155,227,34,0.06);color:var(--green);
+}
+.hacker-hint.hint-wrong{
+  border-color:rgba(255,75,43,0.3);background:rgba(255,75,43,0.06);color:#ff8068;
+}
+.hacker-hint strong{font-weight:700;}
+.hacker-hint .hint-label{
+  color:var(--text-3);text-transform:uppercase;letter-spacing:1.5px;font-size:10px;
+  margin-bottom:6px;display:block;
+}
+
+/* NAV BUTTONS */
+.q-nav{
+  padding:16px 28px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border-top:1px solid var(--card-border);
+  background:rgba(5,7,10,0.3);
+}
+.btn-nav{
+  display:inline-flex;align-items:center;gap:6px;
+  border-radius:var(--radius-pill);padding:9px 20px;
+  font-size:13px;font-weight:600;font-family:var(--sans);
+  cursor:pointer;transition:var(--trans);
+  border:1px solid var(--card-border);
+  background:var(--bg-3);color:var(--text-2);
+}
+.btn-nav:hover:not(:disabled){border-color:rgba(155,227,34,0.4);color:var(--green);}
+.btn-nav:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-nav svg{width:16px;height:16px;}
+.btn-nav.btn-primary{
+  background:var(--green);color:#05070a;
+  border-color:var(--green);
+  box-shadow:0 0 14px var(--green-glow);font-weight:700;
+}
+.btn-nav.btn-primary:hover:not(:disabled){background:#b5f53a;box-shadow:0 0 20px var(--green);}
+.btn-nav.btn-submit{
+  background:var(--red);color:#fff;border-color:var(--red);
+  box-shadow:0 0 14px var(--red-glow);font-weight:700;
+}
+.btn-nav.btn-submit:hover{background:#ff6b52;box-shadow:0 0 20px var(--red);}
+
+/* =========================================================
+   RESULTS SCREEN
+   ========================================================= */
+.results-wrap{max-width:980px;margin:0 auto;padding:44px 24px 80px;}
+.results-hero{text-align:center;margin-bottom:44px;}
+.results-emoji{font-size:60px;margin-bottom:16px;}
+.results-title{
+  font-size:clamp(24px,3vw,38px);font-weight:800;
+  background:linear-gradient(135deg,#e8edf5,#9be322);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:8px;
+}
+.results-sub{font-family:var(--mono);font-size:13px;color:var(--text-2);}
+
+/* SCORE RING */
+.ring-wrap{display:flex;justify-content:center;margin:32px 0 40px;}
+.score-ring{width:160px;height:160px;position:relative;display:flex;align-items:center;justify-content:center;}
+.score-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.sr-bg{fill:none;stroke:var(--card-border);stroke-width:8;}
+.sr-fg{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1);}
+.ring-inner{text-align:center;}
+.ring-pct{font-family:var(--mono);font-size:32px;font-weight:700;color:var(--text-1);line-height:1;}
+.ring-lbl{font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:1px;margin-top:6px;}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;margin-bottom:40px;}
+.stat-card{
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius-lg);padding:20px;text-align:center;
+  backdrop-filter:blur(8px);
+}
+.stat-card__val{
+  font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;margin-bottom:6px;
+}
+.stat-card__lbl{font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:1px;text-transform:uppercase;}
+.sv-total{color:var(--blue);}
+.sv-correct{color:var(--green);}
+.sv-wrong{color:var(--red);}
+.sv-skip{color:var(--yellow);}
+.sv-pct{color:var(--green);}
+
+/* CONCEPT BREAKDOWN */
+.section-title{
+  display:flex;align-items:center;gap:10px;
+  font-size:16px;font-weight:700;color:var(--text-1);
+  margin-bottom:18px;font-family:var(--mono);letter-spacing:0.5px;
+}
+.section-title svg{width:18px;height:18px;color:var(--green);}
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:40px;}
+.concept-card{
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius-lg);padding:18px;
+  backdrop-filter:blur(8px);border-left:4px solid;
+}
+.concept-card.cc-strong{border-left-color:var(--green);}
+.concept-card.cc-avg{border-left-color:var(--yellow);}
+.concept-card.cc-weak{border-left-color:var(--red);}
+.cc-name{font-size:13px;font-weight:700;color:var(--text-1);margin-bottom:8px;font-family:var(--mono);}
+.cc-bar-wrap{background:var(--bg-3);border-radius:var(--radius-pill);height:5px;margin-bottom:8px;overflow:hidden;border:1px solid var(--card-border);}
+.cc-bar{height:100%;border-radius:var(--radius-pill);transition:width 1s cubic-bezier(0.4,0,0.2,1);}
+.cc-strong .cc-bar{background:linear-gradient(90deg,var(--green),#c8ff6a);box-shadow:0 0 6px var(--green-glow);}
+.cc-avg .cc-bar{background:linear-gradient(90deg,var(--yellow),#ffe082);box-shadow:0 0 6px rgba(245,200,66,0.4);}
+.cc-weak .cc-bar{background:linear-gradient(90deg,var(--red),#ff8068);box-shadow:0 0 6px var(--red-glow);}
+.cc-meta{font-family:var(--mono);font-size:11px;color:var(--text-3);}
+.cc-hint{font-family:var(--mono);font-size:11px;color:var(--text-2);margin-top:8px;line-height:1.6;font-style:italic;border-top:1px solid var(--card-border);padding-top:8px;}
+
+/* REVIEW */
+.review-list{display:flex;flex-direction:column;gap:10px;}
+.review-item{
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius);padding:14px 16px;
+  border-left:3px solid;
+}
+.review-item.ri-correct{border-left-color:var(--green);}
+.review-item.ri-wrong{border-left-color:var(--red);}
+.review-item.ri-skip{border-left-color:var(--yellow);}
+.ri-q{font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:8px;line-height:1.5;}
+.ri-detail{display:flex;flex-wrap:wrap;gap:14px;}
+.ri-ans{font-family:var(--mono);font-size:11px;display:flex;align-items:center;gap:5px;}
+.ria-correct{color:var(--green);}
+.ria-wrong{color:var(--red);}
+.ria-skip{color:var(--yellow);}
+
+/* RESULT ACTIONS */
+.results-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:36px 0 40px;}
+.btn-result{
+  display:inline-flex;align-items:center;gap:8px;
+  border-radius:var(--radius-pill);padding:12px 28px;
+  font-size:14px;font-weight:700;font-family:var(--sans);
+  cursor:pointer;transition:var(--trans);border:none;
+}
+.br-primary{background:var(--green);color:#05070a;box-shadow:0 0 16px var(--green-glow);}
+.br-primary:hover{background:#b5f53a;box-shadow:0 0 24px var(--green);}
+.br-outline{background:transparent;color:var(--green);border:1px solid rgba(155,227,34,0.4);}
+.br-outline:hover{background:var(--green-dim);}
+.btn-result svg{width:18px;height:18px;}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.anim{animation:fadeUp 0.28s cubic-bezier(0.4,0,0.2,1) forwards;}
+
+/* Responsive tweaks */
+@media(max-width:600px){
+  .topbar{padding:0 16px;}
+  .hud-items .hud-chip:last-child{display:none;}
+  .quiz-body{padding:14px;}
+  .q-content{padding:18px;}
+  .q-nav{padding:12px 18px 20px;}
+  .home-wrap{padding:36px 16px 60px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     TOP APP BAR
+     ============================================================ -->
+<header>
+  <div class="topbar">
+    <a href="#" class="topbar__logo" onclick="showHome();return false;">
+      <div class="topbar__hex">//</div>
+      <div class="topbar__brand">SYS<span>-</span>621<span> // QUIZ_LAB</span></div>
+    </a>
+    <div class="topbar__spacer"></div>
+    <div class="hud-items">
+      <!-- XP -->
+      <div class="hud-chip xp-chip">
+        <svg viewBox="0 0 16 16" fill="none"><polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,12 3.5,15 5,9.5 1,6 6,6" fill="#9be322"/></svg>
+        XP: <span class="val" id="xp-val">0</span>
+      </div>
+      <!-- Streak -->
+      <div class="hud-chip streak-chip">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M9 1C9 1 5 6 5 9.5C5 12 6.5 14 8 14C8 14 7 12 8.5 10.5C9 13 11 14 11 14C13 14 14 11.5 14 9.5C14 6 10 3 9 1Z" fill="#f5c842"/></svg>
+        Streak: <span class="val" id="streak-val">0</span>
+      </div>
+      <!-- Score badge -->
+      <div class="hud-chip">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#3d9cf5" stroke-width="1.5"/><text x="8" y="12" text-anchor="middle" font-size="8" fill="#3d9cf5" font-weight="700">Q</text></svg>
+        <span id="hud-score-txt">–/–</span>
+      </div>
+    </div>
+  </div>
+  <div class="global-progress">
+    <div class="global-progress__bar" id="global-bar" style="width:0%"></div>
+  </div>
+</header>
+
+<!-- ============================================================
+     HOME SCREEN
+     ============================================================ -->
+<div id="screen-home" class="screen active">
+  <div class="home-wrap">
+    <div class="home-hero">
+      <div class="home-hero__tag">MISSION BRIEFING // SELECT PATH</div>
+      <h1 class="home-hero__title">Systems Analysis &amp;<br>Programming Quiz Lab</h1>
+      <p class="home-hero__sub">// Choose your mission track. 30 questions per session.<br>Earn XP. Build streaks. Master the stack.</p>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat-pill"><span class="dot dot-e"></span>10 Easy / track</div>
+      <div class="stat-pill"><span class="dot dot-m"></span>10 Medium / track</div>
+      <div class="stat-pill"><span class="dot dot-h"></span>10 Hard / track</div>
+      <div class="stat-pill">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,12 3.5,15 5,9.5 1,6 6,6" fill="#9be322"/></svg>
+        XP rewards per correct answer
+      </div>
+    </div>
+
+    <div class="path-grid">
+
+      <!-- PATH 0 -->
+      <div class="path-card" onclick="startQuiz(0)">
+        <div class="path-card__top">
+          <div class="path-card__icon-row">
+            <div class="path-icon pi-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#3d9cf5" stroke-width="1.7" stroke-linecap="round">
+                <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/>
+              </svg>
+            </div>
+            <div class="prog-ring" id="ring-0">
+              <svg width="52" height="52" viewBox="0 0 52 52">
+                <circle class="prog-ring__bg" cx="26" cy="26" r="22"/>
+                <circle class="prog-ring__fg" id="ring-fg-0" cx="26" cy="26" r="22"/>
+              </svg>
+              <div class="prog-ring__pct" id="ring-pct-0">0%</div>
+            </div>
+          </div>
+          <span class="path-card__badge">Path 01 // Ch.1</span>
+          <h2 class="path-card__title">Introduction to IT &amp;<br>Systems Analysis</h2>
+          <p class="path-card__desc">Programming paradigms, C++ program processing pipeline, compilers, linkers, and foundational systems concepts.</p>
+        </div>
+        <div class="path-card__footer">
+          <div class="diff-row">
+            <span class="diff-badge db-e"><span class="dot"></span>10 Easy</span>
+            <span class="diff-badge db-m"><span class="dot"></span>10 Medium</span>
+            <span class="diff-badge db-h"><span class="dot"></span>10 Hard</span>
+          </div>
+          <div class="path-card__cta">
+            <span class="path-card__qcount">// 30 questions</span>
+            <button class="btn-start">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+              Start Mission
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATH 1 -->
+      <div class="path-card" onclick="startQuiz(1)">
+        <div class="path-card__top">
+          <div class="path-card__icon-row">
+            <div class="path-icon pi-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#9be322" stroke-width="1.7" stroke-linecap="round">
+                <path d="M8 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V8l-5-5z"/><polyline points="8 3 8 8 19 8"/>
+              </svg>
+            </div>
+            <div class="prog-ring" id="ring-1">
+              <svg width="52" height="52" viewBox="0 0 52 52">
+                <circle class="prog-ring__bg" cx="26" cy="26" r="22"/>
+                <circle class="prog-ring__fg" id="ring-fg-1" cx="26" cy="26" r="22"/>
+              </svg>
+              <div class="prog-ring__pct" id="ring-pct-1">0%</div>
+            </div>
+          </div>
+          <span class="path-card__badge">Path 02 // Ch.2</span>
+          <h2 class="path-card__title">C++ Fundamentals &amp;<br>Syntax Mechanics</h2>
+          <p class="path-card__desc">Variables, data types, identifiers, arithmetic operators, cin/cout I/O streams, and basic program structure.</p>
+        </div>
+        <div class="path-card__footer">
+          <div class="diff-row">
+            <span class="diff-badge db-e"><span class="dot"></span>10 Easy</span>
+            <span class="diff-badge db-m"><span class="dot"></span>10 Medium</span>
+            <span class="diff-badge db-h"><span class="dot"></span>10 Hard</span>
+          </div>
+          <div class="path-card__cta">
+            <span class="path-card__qcount">// 30 questions</span>
+            <button class="btn-start">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+              Start Mission
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATH 2 -->
+      <div class="path-card" onclick="startQuiz(2)">
+        <div class="path-card__top">
+          <div class="path-card__icon-row">
+            <div class="path-icon pi-3">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#f5c842" stroke-width="1.7" stroke-linecap="round">
+                <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+              </svg>
+            </div>
+            <div class="prog-ring" id="ring-2">
+              <svg width="52" height="52" viewBox="0 0 52 52">
+                <circle class="prog-ring__bg" cx="26" cy="26" r="22"/>
+                <circle class="prog-ring__fg" id="ring-fg-2" cx="26" cy="26" r="22"/>
+              </svg>
+              <div class="prog-ring__pct" id="ring-pct-2">0%</div>
+            </div>
+          </div>
+          <span class="path-card__badge">Path 03 // Ch.3</span>
+          <h2 class="path-card__title">Control Structures &amp;<br>Program Flow</h2>
+          <p class="path-card__desc">Selection statements (if/switch), repetition loops (while/for/do-while), break, continue, and logical expressions.</p>
+        </div>
+        <div class="path-card__footer">
+          <div class="diff-row">
+            <span class="diff-badge db-e"><span class="dot"></span>10 Easy</span>
+            <span class="diff-badge db-m"><span class="dot"></span>10 Medium</span>
+            <span class="diff-badge db-h"><span class="dot"></span>10 Hard</span>
+          </div>
+          <div class="path-card__cta">
+            <span class="path-card__qcount">// 30 questions</span>
+            <button class="btn-start">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+              Start Mission
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     QUIZ SCREEN
+     ============================================================ -->
+<div id="screen-quiz" class="screen">
+  <!-- Quiz header -->
+  <div class="quiz-header">
+    <div class="quiz-header__inner">
+      <button class="btn-back" onclick="confirmHome()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4L6 8l4 4"/></svg>
+        EXIT
+      </button>
+      <div class="qh-info">
+        <div class="qh-topic" id="qh-topic">Path 01</div>
+        <div class="qh-meta" id="qh-meta">// Q1 of 30 — EASY</div>
+      </div>
+    </div>
+  </div>
+  <!-- Glow progress bar -->
+  <div class="glow-progress">
+    <div class="glow-progress__inner">
+      <span class="gp-label" id="gp-label">0 / 30</span>
+      <div class="gp-track"><div class="gp-fill" id="gp-fill" style="width:0%"></div></div>
+      <span class="gp-pct" id="gp-pct">0%</span>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="quiz-body">
+
+    <!-- LEFT: Task Panel -->
+    <aside class="task-panel">
+
+      <!-- Score -->
+      <div class="panel-card">
+        <div class="panel-card__hdr">
+          <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#9be322" stroke-width="1.5"/><path d="M8 5v3l2 1" stroke="#9be322" stroke-width="1.3" stroke-linecap="round"/></svg>
+          SCORE
+        </div>
+        <div class="panel-card__body">
+          <div class="score-display">
+            <div class="score-display__val"><span id="live-correct">0</span><span> / <span id="live-total">0</span></span></div>
+            <div class="score-display__lbl">CORRECT / ANSWERED</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Node Grid -->
+      <div class="panel-card">
+        <div class="panel-card__hdr">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="#9be322" stroke-width="1.3"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="#9be322" stroke-width="1.3"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="#9be322" stroke-width="1.3"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="#9be322" stroke-width="1.3"/></svg>
+          TASK LIST
+        </div>
+        <div class="panel-card__body">
+          <div class="node-grid" id="node-grid"></div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="panel-card">
+        <div class="panel-card__hdr">
+          <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="#9be322" stroke-width="1.3"/><path d="M8 7v5" stroke="#9be322" stroke-linecap="round" stroke-width="1.3"/><circle cx="8" cy="5.5" r="0.8" fill="#9be322"/></svg>
+          LEGEND
+        </div>
+        <div class="panel-card__body">
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot ld-unvisited"></div> Unvisited</div>
+            <div class="legend-item"><div class="legend-dot ld-current"></div> Current</div>
+            <div class="legend-item"><div class="legend-dot ld-answered"></div> Answered</div>
+            <div class="legend-item"><div class="legend-dot ld-correct"></div> Correct</div>
+            <div class="legend-item"><div class="legend-dot ld-wrong"></div> Incorrect</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT: Terminal -->
+    <div class="q-terminal anim" id="q-terminal">
+      <div class="q-term-bar">
+        <div class="term-dots">
+          <div class="term-dot td-r"></div>
+          <div class="term-dot td-y"></div>
+          <div class="term-dot td-g"></div>
+        </div>
+        <div class="q-term-path">root@quiz-lab:<span id="term-path">~</span>$</div>
+        <div class="q-badge-row" id="q-badge-row"></div>
+      </div>
+
+      <div class="q-content">
+        <div class="q-num-row">
+          <div class="q-num" id="q-num">Q01</div>
+          <div class="q-counter" id="q-counter">Question 1 of 30</div>
+        </div>
+        <div class="q-text" id="q-text">Loading question…</div>
+        <div class="options-list" id="options-list"></div>
+        <div class="hacker-hint" id="hacker-hint"></div>
+      </div>
+
+      <div class="q-nav">
+        <button class="btn-nav" id="btn-prev" onclick="navigate(-1)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4L6 8l4 4"/></svg>
+          PREV
+        </button>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-nav btn-primary" id="btn-next" onclick="navigate(1)">
+            NEXT
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4l4 4-4 4"/></svg>
+          </button>
+          <button class="btn-nav btn-submit" id="btn-submit" onclick="submitMission()" style="display:none">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2 9 6 13 14 3"/></svg>
+            SUBMIT MISSION
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     RESULTS SCREEN
+     ============================================================ -->
+<div id="screen-results" class="screen">
+  <div class="results-wrap">
+    <div class="results-hero">
+      <div class="results-emoji" id="res-emoji">🎯</div>
+      <h1 class="results-title" id="res-title">Mission Complete</h1>
+      <p class="results-sub" id="res-sub">// Analyzing results…</p>
+    </div>
+
+    <div class="ring-wrap">
+      <div class="score-ring">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle class="sr-bg" cx="80" cy="80" r="70"/>
+          <circle class="sr-fg" id="sr-fg" cx="80" cy="80" r="70" stroke-dasharray="439.82" stroke-dashoffset="439.82"/>
+        </svg>
+        <div class="ring-inner">
+          <div class="ring-pct" id="ring-pct">0%</div>
+          <div class="ring-lbl">SCORE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-grid" id="stat-grid"></div>
+
+    <!-- Concept Breakdown -->
+    <div class="section-title">
+      <svg viewBox="0 0 18 18" fill="none"><path d="M9 2L11 7H16L12 10.5L13.5 16L9 13L4.5 16L6 10.5L2 7H7Z" stroke="#9be322" stroke-width="1.5"/></svg>
+      KNOWLEDGE GAP ANALYSIS
+    </div>
+    <div class="concept-grid" id="concept-grid"></div>
+
+    <!-- Actions -->
+    <div class="results-actions">
+      <button class="btn-result br-primary" onclick="retakeQuiz()">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 9a8 8 0 1114.9-3M1 9V3h6" stroke-linecap="round"/></svg>
+        RETRY MISSION
+      </button>
+      <button class="btn-result br-outline" onclick="showHome()">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9L9 3l6 6M5 7v8h4v-4h2v4h4V7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        MISSION SELECT
+      </button>
+    </div>
+
+    <!-- Full Review -->
+    <div class="section-title">
+      <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="2" stroke="#9be322" stroke-width="1.5"/><path d="M5 7h8M5 10h5" stroke="#9be322" stroke-linecap="round"/></svg>
+      FULL DEBRIEF // ALL QUESTIONS
+    </div>
+    <div class="review-list" id="review-list"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT — STATE MACHINE + QUESTION BANK
+     ============================================================ -->
+<script>
+/* ============================================================
+   QUESTION BANK — 90 QUESTIONS ACROSS 3 PATHS
+   Each: { topic, difficulty, concept, text, options[4], answer(0-based), hint }
+   ============================================================ */
+const QB = [
+
+  /* =========================================================
+     PATH 0 — Introduction to IT & Systems Analysis (Ch.1)
+     ========================================================= */
+
+  // EASY 0-9
+  {
+    topic:0,difficulty:"easy",concept:"Programming Paradigms",
+    text:"What is a programming paradigm?",
+    options:["A specific programming language like C++ or Java","A method or approach to solving a task using a programming language","A tool used to debug source code","The syntax rules that govern how code is written"],
+    answer:1,
+    hint:"// A paradigm is not a language itself — it is the philosophical approach or methodology used. C++, for example, supports both imperative and object-oriented paradigms."
+  },
+  {
+    topic:0,difficulty:"easy",concept:"Imperative vs. Declarative",
+    text:"Imperative programming is best characterized by:",
+    options:["Expressing what the result should be without describing how","Providing step-by-step instructions that describe how a program executes","Designing solutions around objects that combine data and operations","Using logic statements to derive conclusions automatically"],
+    answer:1,
+    hint:"// Imperative = HOW. You tell the computer every step to take. Declarative = WHAT. Examples of imperative languages: C, C++, Fortran."
+  },
+  {
+    topic:0,difficulty:"easy",concept:"Declarative Programming",
+    text:"Which of the following languages is an example of declarative programming?",
+    options:["C++","Fortran","Prolog","Java"],
+    answer:2,
+    hint:"// Prolog and Erlang are declarative — you specify the logic, not the step-by-step process. C++, Fortran, and Java are imperative/object-oriented."
+  },
+  {
+    topic:0,difficulty:"easy",concept:"Structured Programming",
+    text:"Structured programming is also known as:",
+    options:["Bottom-up design","Object-oriented design","Top-down or modular design","Event-driven programming"],
+    answer:2,
+    hint:"// Structured (top-down/modular) design breaks a complex problem into smaller, manageable sub-problems — like dividing a big task into functions."
+  },
+  {
+    topic:0,difficulty:"easy",concept:"Object-Oriented Programming",
+    text:"In Object-Oriented Programming (OOP), solutions are designed around:",
+    options:["Sequential steps that execute one after another","Logic predicates and inference rules","Objects that combine data and operations into a class","Hardware registers and memory addresses"],
+    answer:2,
+    hint:"// OOP encapsulates data and behavior into objects (instances of classes). This is the foundation of languages like C++, Java, and Python."
+  },
+  {
+    topic:0,difficulty:"easy",concept:"Algorithm Definition",
+    text:"An algorithm is best defined as:",
+    options:["A compiled executable file ready to run","A step-by-step, finite process designed to solve a problem","A hardware instruction set for a specific CPU","The source code of a C++ program before compilation"],
+    answer:1,
+    hint:"// An algorithm must be finite (it terminates) and provides a precise sequence of steps to solve a problem — it is designed BEFORE coding."
+  },
+  {
+    topic:0,difficulty:"easy",concept:"Source Code",
+    text:"What file extension does a C++ source code file typically use?",
+    options:[".obj",".exe",".cpp",".dll"],
+    answer:2,
+    hint:"// C++ source files use the .cpp extension. They contain human-readable code written in a text editor before any processing by the compiler."
+  },
+  {
+    topic:0,difficulty:"easy",concept:"C++ Processing Pipeline",
+    text:"Which component processes a C++ source file FIRST before the compiler sees it?",
+    options:["Linker","Loader","Preprocessor","Assembler"],
+    answer:2,
+    hint:"// The preprocessor handles directives (like #include and #define) before the compiler translates the code. Order: Preprocessor → Compiler → Linker → Loader."
+  },
+  {
+    topic:0,difficulty:"easy",concept:"Object Code",
+    text:"The output produced by a C++ compiler is called:",
+    options:["Source code","Bytecode","Object code","Machine-independent IR"],
+    answer:2,
+    hint:"// The compiler translates source code (.cpp) into object code (.obj) — machine-level instructions that still need to be linked before execution."
+  },
+  {
+    topic:0,difficulty:"easy",concept:"Problem Analysis-Coding-Execution Cycle",
+    text:"Which correctly orders the three main steps of the Problem Analysis–Coding–Execution Cycle?",
+    options:["Code → Analyze → Execute","Analyze/Design Algorithm → Code Implementation → Maintain","Execute → Debug → Compile","Compile → Link → Analyze"],
+    answer:1,
+    hint:"// You always analyze first (design the algorithm), then implement (write code), then maintain. Skipping analysis leads to poor design."
+  },
+
+  // MEDIUM 10-19
+  {
+    topic:0,difficulty:"medium",concept:"C++ Processing Pipeline",
+    text:"A developer writes a C++ program. What is the correct order of the full processing pipeline from source to execution?",
+    options:["Compiler → Preprocessor → Linker → Loader","Preprocessor → Compiler → Linker → Loader","Linker → Compiler → Preprocessor → Loader","Preprocessor → Linker → Compiler → Loader"],
+    answer:1,
+    hint:"// Remember the pipeline: 1) Preprocessor (handles #directives) → 2) Compiler (source to object code) → 3) Linker (combines libraries) → 4) Loader (puts into RAM)."
+  },
+  {
+    topic:0,difficulty:"medium",concept:"Linker Role",
+    text:"What is the primary role of the LINKER in the C++ compilation process?",
+    options:["Translates source code into machine-readable object code","Handles preprocessor directives like #include","Combines object code files with library code to create an executable","Loads the executable program into main memory for execution"],
+    answer:2,
+    hint:"// The linker resolves external references by combining your .obj files with library files (like the standard C++ library), producing one executable (.exe)."
+  },
+  {
+    topic:0,difficulty:"medium",concept:"Loader Role",
+    text:"What does the LOADER do in the C++ program execution process?",
+    options:["Converts source code into object code","Combines library routines with object code","Checks the syntax of the source code","Loads the executable program into main memory (RAM) for CPU execution"],
+    answer:3,
+    hint:"// The loader is the final step — it copies the executable from disk into RAM and hands control to the CPU to begin running the program."
+  },
+  {
+    topic:0,difficulty:"medium",concept:"Structured vs OOP",
+    text:"Which statement best compares Structured (Procedural) Design with Object-Oriented Design?",
+    options:["Both approaches organize code identically; only syntax differs","Structured design divides problems into functions/modules; OOP encapsulates related data and behavior into objects (classes)","OOP uses top-down decomposition; Structured design uses bottom-up class hierarchies","Structured design supports inheritance; OOP relies purely on sequential functions"],
+    answer:1,
+    hint:"// Structured (procedural): break into functions. OOP: bundle data + operations into objects. OOP enables inheritance, polymorphism, encapsulation."
+  },
+  {
+    topic:0,difficulty:"medium",concept:"Programming Paradigms",
+    text:"C++ is classified as supporting which programming paradigm(s)?",
+    options:["Only declarative","Only object-oriented","Only structured/procedural","Both imperative (structured) and object-oriented"],
+    answer:3,
+    hint:"// C++ is multi-paradigm: it supports procedural (C-style), object-oriented (classes), and even generic programming (templates). This is what makes it powerful."
+  },
+  {
+    topic:0,difficulty:"medium",concept:"Imperative vs. Declarative",
+    text:"A programmer writes code that specifies exactly WHAT result they want (e.g., a SQL SELECT query) without describing HOW to retrieve it. This is an example of:",
+    options:["Imperative programming","Structured programming","Declarative programming","Object-oriented programming"],
+    answer:2,
+    hint:"// SQL is declarative — 'SELECT * FROM users WHERE age > 18' tells the DB what you want, not how to find it. The engine figures out the HOW."
+  },
+  {
+    topic:0,difficulty:"medium",concept:"Algorithm Design",
+    text:"Before writing any C++ code, a systems analyst designs a precise, step-by-step finite solution to a problem. This document is called a(n):",
+    options:["Flowchart only","Executable file","Algorithm","Source code file"],
+    answer:2,
+    hint:"// An algorithm is the logical solution designed BEFORE coding. It can be written as pseudocode or a flowchart. The Problem Analysis step produces this."
+  },
+  {
+    topic:0,difficulty:"medium",concept:"Preprocessor Directives",
+    text:"The line `#include <iostream>` in a C++ program is handled by which component?",
+    options:["The linker, which adds library object code","The compiler, which translates it to machine code","The preprocessor, which inserts the iostream header file content","The loader, which maps it into memory"],
+    answer:2,
+    hint:"// #include is a preprocessor directive. The preprocessor runs first, literally copying the contents of <iostream> into your file before the compiler sees it."
+  },
+  {
+    topic:0,difficulty:"medium",concept:"C++ Processing Pipeline",
+    text:"Object code produced by the compiler still cannot run by itself because:",
+    options:["It contains syntax errors that must be corrected","It needs to be converted back to source code first","It must be linked with library code and other object modules to resolve external references","The loader has not yet translated it from ASCII to binary"],
+    answer:2,
+    hint:"// Object code has 'unresolved references' to library functions like cout. The linker connects these, producing a self-contained executable."
+  },
+  {
+    topic:0,difficulty:"medium",concept:"OOP Concepts",
+    text:"In the Object-Oriented paradigm, a CLASS is best described as:",
+    options:["A function that processes sequential data","A single unit that combines data (attributes) and operations (methods) into a blueprint for creating objects","A reserved word in C++ like int or float","A memory address where object data is stored"],
+    answer:1,
+    hint:"// A class is a blueprint. Objects are instances of that class. Example: 'Car' is a class; your specific red Toyota is an object (instance) of Car."
+  },
+
+  // HARD 20-29
+  {
+    topic:0,difficulty:"hard",concept:"C++ Processing Pipeline",
+    text:"Examine this scenario: A C++ program uses `#define MAX 100` and `#include \"mylib.h\"`. After the preprocessor runs but before the compiler runs, which of the following describes the state of the code?",
+    options:["The code is compiled to machine instructions, with MAX replaced by 100","The macro MAX is still unresolved; #include has been ignored","All occurrences of MAX are replaced with 100, and the contents of mylib.h are inserted inline","The linker has already resolved all external symbols"],
+    answer:2,
+    hint:"// The preprocessor performs textual substitution: #define replaces macros, #include copies file contents in-place. The compiler then sees the 'clean' expanded code."
+  },
+  {
+    topic:0,difficulty:"hard",concept:"Paradigm Application",
+    text:"A team builds a banking system. They model Accounts, Customers, and Transactions as separate entities, each with their own data and behaviors (deposit, withdraw). They use inheritance for SavingsAccount and CheckingAccount. Which paradigm is PRIMARY here, and what feature makes it superior to structured design for this case?",
+    options:["Declarative; because SQL can query the account tables","Structured; because functions can be reused across modules","Object-Oriented; because inheritance allows SavingsAccount to reuse Account's behavior while extending it","Imperative; because every transaction is a sequential step"],
+    answer:2,
+    hint:"// OOP shines here: inheritance (SavingsAccount IS-A Account), encapsulation (data hidden inside objects), and polymorphism make the system modular and extensible."
+  },
+  {
+    topic:0,difficulty:"hard",concept:"Algorithm Complexity",
+    text:"An algorithm that processes an input list of n items and performs a nested loop (a loop inside a loop, each iterating n times) has a time complexity of:",
+    options:["O(n) — linear time","O(log n) — logarithmic time","O(n²) — quadratic time","O(1) — constant time"],
+    answer:2,
+    hint:"// A loop within a loop = n × n = n² operations. This is O(n²) — quadratic complexity. For n=1000, that's 1,000,000 operations!"
+  },
+  {
+    topic:0,difficulty:"hard",concept:"C++ Processing Pipeline",
+    text:"During which phase of C++ processing would a 'undefined reference to function X' error typically occur?",
+    options:["Preprocessing — the preprocessor cannot find the function","Compilation — the compiler cannot parse the function syntax","Linking — the linker cannot find the definition of function X in any object file or library","Loading — the loader fails to map the function into memory"],
+    answer:2,
+    hint:"// 'Undefined reference' is a LINKER error. The compiler compiles each file in isolation and creates a placeholder. The linker then tries to connect all placeholders to actual function definitions."
+  },
+  {
+    topic:0,difficulty:"hard",concept:"Paradigm Comparison",
+    text:"A developer must choose between two designs: Design A uses a series of global functions that pass data structures as parameters. Design B groups related data and functions into classes with access control. Which design follows OOP principles and why?",
+    options:["Design A — global functions are more efficient","Design B — classes encapsulate data and behavior, providing access control and logical grouping","Design A — structured programming is always more readable","Both — OOP and structured design produce identical results"],
+    answer:1,
+    hint:"// Design B encapsulates data (private attributes) with behavior (public methods) inside a class. This is the core principle of OOP — abstraction + encapsulation + information hiding."
+  },
+  {
+    topic:0,difficulty:"hard",concept:"Algorithm Design",
+    text:"A problem requires finding the largest value in an unsorted list of n integers. Which of the following algorithmic approaches is most efficient?",
+    options:["Sort the list using bubble sort (O(n²)) then take the last element","Use a single pass through the list, tracking the current maximum — O(n)","Use binary search O(log n) on the unsorted list","Recursively split the list in half and compare halves — O(n²)"],
+    answer:1,
+    hint:"// For finding max in an unsorted list: one linear scan is optimal — O(n). You CANNOT do better than O(n) since you must examine every element at least once."
+  },
+  {
+    topic:0,difficulty:"hard",concept:"Compiler Role",
+    text:"A C++ compiler detects `int x = 'hello';`. What type of error does it report and at which pipeline stage?",
+    options:["Runtime error during loading — memory allocation fails","Linker error — 'hello' cannot be resolved to a library symbol","Compile-time type error — a string literal cannot be assigned to an int variable","Preprocessor error — the preprocessor strips string literals"],
+    answer:2,
+    hint:"// Type checking is the compiler's job. Assigning a string literal to int is a type mismatch — a compile-time error. The compiler enforces C++'s strong typing rules."
+  },
+  {
+    topic:0,difficulty:"hard",concept:"Problem Analysis-Coding-Execution Cycle",
+    text:"A software team skips the algorithm design step and begins coding immediately. Which consequence is MOST likely?",
+    options:["The program runs faster due to reduced overhead","The linker produces more efficient object code","The program may solve the wrong problem or be poorly structured, requiring costly redesign later","The preprocessor will automatically optimize the code structure"],
+    answer:2,
+    hint:"// Skipping analysis is the #1 cause of software project failure. Without a clear algorithm, you code toward an unclear goal — leading to bugs, rework, and missed requirements."
+  },
+  {
+    topic:0,difficulty:"hard",concept:"Paradigm Application",
+    text:"A real-time traffic simulation models thousands of individual cars, each with position, speed, and behavior (accelerate, brake, turn). Which paradigm is MOST appropriate and why?",
+    options:["Declarative — because you want to describe the traffic rules, not the simulation steps","Structured/Procedural — because each car's motion is a sequential calculation","Object-Oriented — because each car is naturally an object with its own state and behaviors","Assembly-level imperative — for maximum real-time performance"],
+    answer:2,
+    hint:"// Thousands of cars with independent state and behaviors = natural objects. OOP models real-world entities directly: class Car { speed, position; accelerate(); brake(); }"
+  },
+  {
+    topic:0,difficulty:"hard",concept:"C++ Processing Pipeline",
+    text:"A static library (libmath.a) contains pre-compiled math functions. At which stage does the C++ toolchain incorporate this library into your program?",
+    options:["Preprocessing — #include pulls the library source code in","Compilation — the compiler generates merged object code","Linking — the linker combines your object code with library object files","Loading — the OS dynamically loads the library at runtime"],
+    answer:2,
+    hint:"// Static libraries are resolved at LINK time. The linker extracts the needed .obj files from the library and merges them into your final executable. (Dynamic libraries like .dll/.so are loaded at runtime.)"
+  },
+
+  /* =========================================================
+     PATH 1 — C++ Fundamentals & Syntax Mechanics (Ch.2)
+     ========================================================= */
+
+  // EASY 0-9
+  {
+    topic:1,difficulty:"easy",concept:"main() Function",
+    text:"Every C++ program must contain a function named:",
+    options:["start()","begin()","main()","run()"],
+    answer:2,
+    hint:"// The main() function is the entry point of every C++ program. Execution always begins there — without it, the program cannot run."
+  },
+  {
+    topic:1,difficulty:"easy",concept:"Tokens",
+    text:"What is a 'token' in a C++ program?",
+    options:["A complete line of code terminated by a semicolon","The smallest individual unit of a program, such as a keyword, identifier, or symbol","A block of code enclosed in curly braces {}","A comment explaining the code logic"],
+    answer:1,
+    hint:"// Tokens are the atoms of a program. They include: special symbols (+, -, ;), reserved words (int, float), and identifiers (variable names you create)."
+  },
+  {
+    topic:1,difficulty:"easy",concept:"Reserved Words",
+    text:"Reserved words (keywords) in C++ are:",
+    options:["Words that programmers can redefine for their own use","Names created by programmers for variables and functions","Words with fixed, predefined meanings that must be written in lowercase","Names that can only be used as function parameters"],
+    answer:2,
+    hint:"// Keywords like int, float, return, if, while are reserved — they have fixed meanings in C++. You cannot use them as identifiers, and they are always lowercase."
+  },
+  {
+    topic:1,difficulty:"easy",concept:"Identifiers",
+    text:"Which of the following is a VALID C++ identifier?",
+    options:["2ndValue","my-var","_totalScore","float"],
+    answer:2,
+    hint:"// Identifiers must START with a letter or underscore (_). 2ndValue starts with a digit (invalid), my-var has a hyphen (invalid), float is a reserved word (invalid)."
+  },
+  {
+    topic:1,difficulty:"easy",concept:"Data Types — Integral",
+    text:"Which C++ data type is used to store whole numbers (integers)?",
+    options:["float","double","string","int"],
+    answer:3,
+    hint:"// int is the primary integral type for whole numbers. char and bool are also integral. float and double store decimal (floating-point) numbers."
+  },
+  {
+    topic:1,difficulty:"easy",concept:"Data Types — Floating Point",
+    text:"Which data type would you use to store the value 3.14159 in C++?",
+    options:["int","bool","char","double"],
+    answer:3,
+    hint:"// float and double store decimal (floating-point) numbers. double has greater precision (15-16 digits) than float (6-7 digits). For 3.14159, double is ideal."
+  },
+  {
+    topic:1,difficulty:"easy",concept:"Output — cout",
+    text:"Which C++ statement is used to display output to the screen?",
+    options:["cin >> output","printf(screen)","cout << message","print(message)"],
+    answer:2,
+    hint:"// cout (character output) with the insertion operator << sends data to the standard output (screen). Example: cout << 'Hello' << endl;"
+  },
+  {
+    topic:1,difficulty:"easy",concept:"Input — cin",
+    text:"Which C++ statement reads data from the keyboard into a variable?",
+    options:["cin >> variable","cout << variable","input >> variable","read(variable)"],
+    answer:0,
+    hint:"// cin (character input) with the extraction operator >> reads data from the keyboard. Example: cin >> age; — waits for user to type and press Enter."
+  },
+  {
+    topic:1,difficulty:"easy",concept:"Modulus Operator",
+    text:"What does the % (modulus) operator return in C++?",
+    options:["The quotient of integer division","A floating-point percentage value","The remainder after integer division","The absolute value of a number"],
+    answer:2,
+    hint:"// 17 % 5 = 2 (since 17 = 5×3 + 2). Modulus works only with integers. It's useful for determining if a number is even (n%2==0) or cycling through a range."
+  },
+  {
+    topic:1,difficulty:"easy",concept:"Variable Declaration",
+    text:"Why must variables be initialized before use in C++?",
+    options:["C++ automatically assigns -1 to all uninitialized variables","Uninitialized variables contain 'garbage' values — random data left in memory","The compiler will delete uninitialized variables","Uninitialized variables always default to zero in modern C++"],
+    answer:1,
+    hint:"// Uninitialized variables hold whatever random bits happen to be at that memory location — called 'garbage values'. Always initialize: int count = 0;"
+  },
+
+  // MEDIUM 10-19
+  {
+    topic:1,difficulty:"medium",concept:"Identifiers",
+    text:"A programmer names a variable `3rdAttempt`. What rule does this violate, and what is a valid alternative?",
+    options:["It violates the rule that identifiers must be lowercase — use thirdattempt","It violates the rule that identifiers must start with a letter or underscore — use third_Attempt or attempt3","It violates the rule that identifiers cannot contain digits — use thirdAttempt","It violates the rule against using underscores — use 3rdAttempt is actually valid"],
+    answer:1,
+    hint:"// Identifiers MUST begin with a letter (a-z, A-Z) or underscore (_). They can CONTAIN digits but not START with them. third_Attempt, _attempt3, attempt3 are all valid."
+  },
+  {
+    topic:1,difficulty:"medium",concept:"Data Types",
+    text:"What is the difference between `float` and `double` in C++?",
+    options:["float stores integers; double stores decimals","Both store the same types; double is just an alias for float","double provides greater precision (approx. 15-16 significant digits) than float (approx. 6-7 digits) and uses more memory","float is for positive numbers; double handles negative decimals"],
+    answer:2,
+    hint:"// float ≈ 6-7 significant digits (32-bit). double ≈ 15-16 significant digits (64-bit). For scientific calculations, always prefer double to avoid rounding errors."
+  },
+  {
+    topic:1,difficulty:"medium",concept:"Arithmetic Operators",
+    text:"What is the result of the expression: `17 / 4` in C++ when both operands are integers?",
+    options:["4.25","4","3","5"],
+    answer:1,
+    hint:"// INTEGER division in C++ truncates (drops) the decimal part. 17 / 4 = 4 (not 4.25). To get 4.25, at least one operand must be floating-point: 17.0 / 4 = 4.25."
+  },
+  {
+    topic:1,difficulty:"medium",concept:"Input/Output",
+    text:"What is the purpose of `endl` in `cout << \"Hello\" << endl;`?",
+    options:["It ends the program execution","It inserts a newline character AND flushes the output buffer","It is a C++ keyword that marks the end of a data type","It signals cin to stop reading input"],
+    answer:1,
+    hint:"// endl does TWO things: 1) outputs '\\n' (newline), 2) flushes the output buffer to ensure the text appears immediately. '\\n' alone only adds a newline."
+  },
+  {
+    topic:1,difficulty:"medium",concept:"Variable Declaration",
+    text:"Which of the following is the correct way to declare and initialize a variable in C++?",
+    options:["variable int = count 5;","int count = 5;","count : int := 5;","declare int count to 5;"],
+    answer:1,
+    hint:"// C++ syntax: DataType variableName = initialValue; — Example: int count = 5; or double price = 9.99; The type always comes first."
+  },
+  {
+    topic:1,difficulty:"medium",concept:"String Data Type",
+    text:"In C++, a string is declared using the `string` type. What kind of value does it store?",
+    options:["A single character enclosed in single quotes","A sequence of characters enclosed in double quotes","A numerical ASCII code for a character","A boolean value (true/false)"],
+    answer:1,
+    hint:"// string stores sequences of characters in double quotes: string name = \"Alice\"; Single characters use char with single quotes: char grade = 'A';"
+  },
+  {
+    topic:1,difficulty:"medium",concept:"Arithmetic Operators",
+    text:"Evaluate: What is the value of `result` after `int result = 10 + 3 * 2;`?",
+    options:["26","16","10","14"],
+    answer:1,
+    hint:"// C++ follows standard operator precedence: * and / before + and -. So 3 * 2 = 6 first, then 10 + 6 = 16. Use parentheses to override: (10+3)*2 = 26."
+  },
+  {
+    topic:1,difficulty:"medium",concept:"cin — Multiple Inputs",
+    text:"What does `cin >> x >> y;` do when the user types `5 10` and presses Enter?",
+    options:["Reads only x=5 and ignores y","Reads x=5 and y=10 from the same input line","Reads x='5 10' as a string","Generates an error because cin cannot chain extractions"],
+    answer:1,
+    hint:"// cin >> x >> y is chained extraction. It reads whitespace-separated tokens: x gets 5, y gets 10. cin skips whitespace between values automatically."
+  },
+  {
+    topic:1,difficulty:"medium",concept:"Data Types — bool",
+    text:"What values can a `bool` variable hold in C++, and to which integral type does it belong?",
+    options:["0 to 255 — it belongs to the char integral type","true or false (1 or 0) — it belongs to the integral data types","Any positive integer — it is a floating-point subtype","'yes' or 'no' as string values — it is a string subtype"],
+    answer:1,
+    hint:"// bool is an integral type storing true (1) or false (0). It's used in conditions: if (isValid) {...}. Along with int, char, and short, it is an integral type."
+  },
+  {
+    topic:1,difficulty:"medium",concept:"Modulus Operator",
+    text:"A programmer writes `if (n % 2 == 0)` to check a condition about n. What does this condition check?",
+    options:["Whether n is greater than 2","Whether n is divisible by 2 (i.e., n is even)","Whether the remainder when dividing 2 by n equals 0","Whether n equals 0"],
+    answer:1,
+    hint:"// n % 2 gives the remainder when n is divided by 2. If the remainder is 0, n is evenly divisible by 2 — meaning n is EVEN. If n%2==1, n is odd."
+  },
+
+  // HARD 20-29
+  {
+    topic:1,difficulty:"hard",concept:"Integer Division & Modulus",
+    text:"What is the output of: `cout << 23 / 4 << \" \" << 23 % 4;`",
+    options:["5 3","5.75 3","5 2","4 3"],
+    answer:0,
+    hint:"// 23 / 4: integer division = 5 (since 4×5=20, remainder is 3). 23 % 4: remainder = 3 (23 = 4×5 + 3). Output: '5 3'."
+  },
+  {
+    topic:1,difficulty:"hard",concept:"Type Conversion",
+    text:"What is the output of: `double x = 7 / 2; cout << x;`",
+    options:["3.5","3.0","3","7.0"],
+    answer:1,
+    hint:"// TRAP: 7/2 is integer division (both literals are int) = 3. Then 3 is assigned to double x = 3.0. To get 3.5, write 7.0/2 or (double)7/2."
+  },
+  {
+    topic:1,difficulty:"hard",concept:"Variable Scope",
+    text:"A variable declared inside the `main()` function is called a _____ variable and is accessible:",
+    options:["Global variable — accessible from any function in the program","Local variable — accessible only within the block (function) where it is declared","Static variable — accessible throughout the program's lifetime","Register variable — stored in CPU registers, not memory"],
+    answer:1,
+    hint:"// Variables declared inside a function are LOCAL — they exist only within that function's scope ({}). They are created when the function starts and destroyed when it ends."
+  },
+  {
+    topic:1,difficulty:"hard",concept:"Arithmetic Operators",
+    text:"Evaluate the expression: `int a = 5; a += 3; a *= 2; cout << a;`",
+    options:["11","13","16","10"],
+    answer:2,
+    hint:"// Step 1: a=5. Step 2: a+=3 → a = 5+3 = 8. Step 3: a*=2 → a = 8×2 = 16. Compound operators modify in-place: += adds, *= multiplies."
+  },
+  {
+    topic:1,difficulty:"hard",concept:"cin — Data Types",
+    text:"A user enters '3.7' when the program executes `int x; cin >> x;`. What value does x hold?",
+    options:["3.7 converted to integer 4 by rounding","3 — cin truncates the decimal when reading into an int","0 — cin fails because 3.7 is not a valid integer","An error is thrown and the program crashes"],
+    answer:1,
+    hint:"// cin extracts characters that form a valid integer. It reads '3', stops at '.', and stores 3 in x. The '.7' remains in the input buffer — which can cause problems for subsequent reads."
+  },
+  {
+    topic:1,difficulty:"hard",concept:"Data Types — Overflow",
+    text:"If `short` can store values from -32,768 to 32,767, what happens when you execute `short s = 32767; s++;`?",
+    options:["s becomes 32768 — the short expands automatically","s wraps around to -32768 — integer overflow occurs","s stays at 32767 — the increment is ignored","A runtime exception is thrown by the C++ runtime"],
+    answer:1,
+    hint:"// Integer overflow wraps around due to binary representation. 32767 in binary is 0111...1; adding 1 flips to 1000...0 = -32768 in two's complement. C++ does NOT throw on overflow!"
+  },
+  {
+    topic:1,difficulty:"hard",concept:"Operators",
+    text:"What is the result of `cout << (5 != 5) + (3 > 1) + (10 == 10);`?",
+    options:["0","2","1","3"],
+    answer:1,
+    hint:"// Boolean expressions evaluate to 1 (true) or 0 (false): (5!=5)=0, (3>1)=1, (10==10)=1. Sum = 0+1+1 = 2. In C++, bool arithmetic works with int."
+  },
+  {
+    topic:1,difficulty:"hard",concept:"String Operations",
+    text:"Given `string s = \"Hello\"; cout << s.length();`, what is the output?",
+    options:["6","5","4","7"],
+    answer:1,
+    hint:"// s.length() returns the number of characters in the string. 'Hello' has 5 characters: H-e-l-l-o. (Note: strlen('Hello') in C also = 5, not including null terminator.)"
+  },
+  {
+    topic:1,difficulty:"hard",concept:"Variable Declaration",
+    text:"Which declaration correctly creates a constant that cannot be changed after initialization in C++?",
+    options:["fixed int MAX = 100;","immutable MAX = 100;","const int MAX = 100;","static MAX int = 100;"],
+    answer:2,
+    hint:"// The 'const' keyword makes a variable read-only after initialization: const int MAX = 100; Any attempt to modify MAX later results in a compile-time error."
+  },
+  {
+    topic:1,difficulty:"hard",concept:"Arithmetic Operators",
+    text:"Evaluate: `int x = 10; cout << x++ << \" \" << ++x;`",
+    options:["10 12","11 12","10 11","11 11"],
+    answer:0,
+    hint:"// x++ (post-increment): outputs x THEN increments → outputs 10, x becomes 11. ++x (pre-increment): increments x FIRST then outputs → x becomes 12, outputs 12. Output: '10 12'."
+  },
+
+  /* =========================================================
+     PATH 2 — Control Structures & Program Flow (Ch.3)
+     ========================================================= */
+
+  // EASY 0-9
+  {
+    topic:2,difficulty:"easy",concept:"Relational Operators",
+    text:"Which of the following is the correct C++ operator to check if two values are EQUAL?",
+    options:["=","===","==","!="],
+    answer:2,
+    hint:"// = is the ASSIGNMENT operator (x = 5 sets x to 5). == is the EQUALITY comparison (x == 5 checks if x equals 5). Confusing them is a very common bug!"
+  },
+  {
+    topic:2,difficulty:"easy",concept:"if Statement",
+    text:"What type of selection structure is implemented by a single `if` statement (without `else`)?",
+    options:["Two-way selection","Multi-way selection","One-way selection","Repetition"],
+    answer:2,
+    hint:"// A single if statement is one-way selection — if the condition is true, execute the block; otherwise, skip it and continue. if...else is two-way selection."
+  },
+  {
+    topic:2,difficulty:"easy",concept:"if-else Statement",
+    text:"An `if...else` statement is classified as:",
+    options:["A repetition structure","A one-way selection structure","A two-way selection structure","A multi-way switch structure"],
+    answer:2,
+    hint:"// if...else gives exactly TWO paths: one if the condition is true, one if it is false. For more than two paths, use else-if chains or switch statements."
+  },
+  {
+    topic:2,difficulty:"easy",concept:"while Loop",
+    text:"A `while` loop is classified as a _____ loop because:",
+    options:["Posttest; the condition is checked after each iteration","Pretest; the condition is checked BEFORE each iteration, so the body may never execute","Counter-controlled; it always uses an integer counter","Infinite; it never terminates on its own"],
+    answer:1,
+    hint:"// while is pretest: the condition is evaluated BEFORE the body runs. If false from the start, the loop body executes ZERO times. This distinguishes it from do-while."
+  },
+  {
+    topic:2,difficulty:"easy",concept:"do-while Loop",
+    text:"What is the key difference between a `do...while` loop and a `while` loop?",
+    options:["do...while loops can only be used with integer counters","do...while loops check the condition AFTER the body executes, guaranteeing at least one execution","do...while loops are faster because they skip the condition check","while loops execute the body at least once; do...while may skip it"],
+    answer:1,
+    hint:"// do...while is POSTTEST — the body runs FIRST, then the condition is checked. This guarantees at least one execution, making it ideal for menus that must display at least once."
+  },
+  {
+    topic:2,difficulty:"easy",concept:"for Loop",
+    text:"What three components are included in a `for` loop header?",
+    options:["Variable declaration, function call, return value","Initialization, condition, update (increment/decrement)","Start value, end value, step value as separate statements","Loop variable, body, and break condition"],
+    answer:1,
+    hint:"// for(initialization; condition; update): for(int i=0; i<10; i++) — init sets i=0, condition checks i<10 before each iteration, update increments i after each body execution."
+  },
+  {
+    topic:2,difficulty:"easy",concept:"switch Statement",
+    text:"The `switch` statement is used for:",
+    options:["Repeating a block of code a fixed number of times","Testing a condition that evaluates to true or false","Multi-way selection — executing different code blocks based on the value of an expression","Defining functions with multiple return paths"],
+    answer:2,
+    hint:"// switch evaluates one expression and jumps to the matching case label. It's cleaner than long else-if chains when comparing one variable to many constant values."
+  },
+  {
+    topic:2,difficulty:"easy",concept:"break Statement",
+    text:"What does the `break` statement do inside a loop?",
+    options:["Skips the current iteration and continues to the next","Restarts the loop from the beginning","Causes immediate exit from the loop or switch structure","Pauses execution for a specified number of milliseconds"],
+    answer:2,
+    hint:"// break immediately exits the nearest enclosing loop or switch. Execution continues with the statement after the loop/switch. Continue is different — it skips to the next iteration."
+  },
+  {
+    topic:2,difficulty:"easy",concept:"continue Statement",
+    text:"What does the `continue` statement do inside a loop?",
+    options:["Terminates the loop immediately","Restarts the entire program","Skips the remaining statements in the current iteration and goes to the next loop cycle","Jumps to a labeled section of code outside the loop"],
+    answer:2,
+    hint:"// continue skips the REST of the current loop body and jumps to the next iteration's condition check. It does NOT exit the loop — use break for that."
+  },
+  {
+    topic:2,difficulty:"easy",concept:"Compound Statement",
+    text:"A compound statement in C++ is:",
+    options:["A statement that contains a mathematical expression","Multiple statements enclosed in curly braces {} treated as a single unit","A function call with multiple parameters","A nested loop structure"],
+    answer:1,
+    hint:"// Compound statements (blocks) use {} to group multiple statements into one logical unit. Essential for if/else/loops that need to execute more than one line."
+  },
+
+  // MEDIUM 10-19
+  {
+    topic:2,difficulty:"medium",concept:"Loop Types Comparison",
+    text:"When is a `do...while` loop more appropriate than a `while` loop?",
+    options:["When the exact number of iterations is known in advance","When the loop body should never execute if the condition starts false","When the loop body must execute at least once regardless of the initial condition (e.g., a menu system)","When using floating-point counter variables"],
+    answer:2,
+    hint:"// Menu systems: you must display the menu at least once before checking if the user wants to exit. do-while guarantees one execution before condition check."
+  },
+  {
+    topic:2,difficulty:"medium",concept:"Sentinel-Controlled Loop",
+    text:"A program reads user input in a loop and stops when the user enters -1. This is an example of:",
+    options:["Counter-controlled repetition — a counter decrements from -1","A for loop — the sentinel is the loop counter","Sentinel-controlled repetition — the loop continues until a special terminating value is entered","A switch-controlled structure"],
+    answer:2,
+    hint:"// Sentinel = special value signaling 'stop'. Used when the number of iterations is unknown. The sentinel (-1) is NOT processed as real data — it's just the stop signal."
+  },
+  {
+    topic:2,difficulty:"medium",concept:"Relational & Logical Operators",
+    text:"What does the condition `(x >= 5 && x <= 10)` evaluate to when x = 7?",
+    options:["false — x must equal exactly 5 or 10","true — x is within the range [5, 10]","Syntax error — && is not a valid C++ operator","Undefined — the condition is ambiguous"],
+    answer:1,
+    hint:"// && is the AND logical operator. Both sub-conditions must be true: (7>=5) is true AND (7<=10) is true → result is TRUE. x is in the range 5 to 10 inclusive."
+  },
+  {
+    topic:2,difficulty:"medium",concept:"switch Statement",
+    text:"In a switch statement, what happens if a `break` statement is omitted after a case block?",
+    options:["The switch exits immediately with a compile error","Execution falls through to the next case and continues executing until a break or the end of the switch","The current case executes in an infinite loop","The default case is executed instead"],
+    answer:1,
+    hint:"// Fall-through! Without break, execution continues into the next case. Sometimes intentional (stacking cases), but usually a bug. Always add break unless fall-through is deliberate."
+  },
+  {
+    topic:2,difficulty:"medium",concept:"for Loop",
+    text:"How many times does the following loop execute its body? `for (int i = 1; i <= 5; i++)`",
+    options:["4 times","6 times","5 times","Infinite times"],
+    answer:2,
+    hint:"// i starts at 1, condition i<=5 is checked. Executes for i=1,2,3,4,5 → 5 iterations. When i becomes 6, condition 6<=5 is false, loop ends."
+  },
+  {
+    topic:2,difficulty:"medium",concept:"Nested Loops",
+    text:"How many times does the inner statement execute in: `for(int i=0;i<3;i++) { for(int j=0;j<4;j++) { cout<<\"*\"; } }`",
+    options:["7","3","12","4"],
+    answer:2,
+    hint:"// Outer loop: 3 iterations (i=0,1,2). For each outer iteration, inner loop runs 4 times (j=0,1,2,3). Total: 3 × 4 = 12 asterisks printed."
+  },
+  {
+    topic:2,difficulty:"medium",concept:"while Loop",
+    text:"A while loop has a condition that is `false` from the very beginning. How many times does the loop body execute?",
+    options:["Once — the body always executes at least once","Infinitely — a false condition triggers an infinite loop","Zero times — the condition fails before the first iteration","Undefined behavior in C++"],
+    answer:2,
+    hint:"// while is PRETEST — condition checked FIRST. If false immediately, the body is NEVER executed (0 times). This is exactly why do-while exists for 'at least once' scenarios."
+  },
+  {
+    topic:2,difficulty:"medium",concept:"Logical Operators",
+    text:"What is the result of `!(5 > 3)` in C++?",
+    options:["true (1)","false (0)","5","3"],
+    answer:1,
+    hint:"// Step 1: (5>3) evaluates to true (1). Step 2: ! (NOT) negates it → !true = false (0). The NOT operator inverts a boolean value."
+  },
+  {
+    topic:2,difficulty:"medium",concept:"Counter-Controlled Loop",
+    text:"Which loop type is BEST suited when the exact number of iterations is known before the loop starts?",
+    options:["while loop with a sentinel value","do...while loop","for loop","Nested while loops"],
+    answer:1,
+    hint:"// for loops are ideal for counter-controlled repetition: for(int i=0; i<N; i++) — N is known. while/do-while are better when the iteration count depends on runtime conditions."
+  },
+  {
+    topic:2,difficulty:"medium",concept:"if-else Chain",
+    text:"A program uses: `if(score>=90) grade='A'; else if(score>=80) grade='B'; else grade='C';`. If score=85, what is grade?",
+    options:["'A'","'C'","'B'","Undefined — multiple conditions are true"],
+    answer:2,
+    hint:"// C++ evaluates else-if chains top to bottom, taking the FIRST true branch. (85>=90) is false, skip. (85>=80) is true → grade='B'. The else 'C' is skipped."
+  },
+
+  // HARD 20-29
+  {
+    topic:2,difficulty:"hard",concept:"Loop Output Tracing",
+    text:"Trace the output: `int i=1, sum=0; while(i<=4) { sum+=i; i++; } cout<<sum;`",
+    options:["4","10","15","6"],
+    answer:1,
+    hint:"// Trace: i=1,sum=1→ i=2,sum=3→ i=3,sum=6→ i=4,sum=10→ i=5, condition 5<=4 is false, exit. Output: 10. This computes 1+2+3+4=10."
+  },
+  {
+    topic:2,difficulty:"hard",concept:"break and continue",
+    text:"What is the output? `for(int i=0;i<5;i++){if(i==2) continue; if(i==4) break; cout<<i<<\" \";}`",
+    options:["0 1 3","0 1 2 3","0 1","0 1 3 4"],
+    answer:0,
+    hint:"// i=0: print 0. i=1: print 1. i=2: continue (skip, don't print). i=3: print 3. i=4: break (exit loop). Output: '0 1 3'. continue skips, break exits."
+  },
+  {
+    topic:2,difficulty:"hard",concept:"switch Fall-Through",
+    text:"What is the output? `int x=2; switch(x){case 1: cout<<\"A\"; case 2: cout<<\"B\"; case 3: cout<<\"C\"; break; default: cout<<\"D\";}`",
+    options:["B","BC","BCD","B C"],
+    answer:1,
+    hint:"// x=2 matches case 2. No break after case 2 → FALLS THROUGH to case 3, prints 'C'. Then break exits. Output: 'BC'. Fall-through is the classic switch gotcha!"
+  },
+  {
+    topic:2,difficulty:"hard",concept:"Nested Conditions",
+    text:"What does this code output when x=5? `if(x>3){if(x>7) cout<<\"A\"; else cout<<\"B\";} else cout<<\"C\";`",
+    options:["A","C","B","No output — the condition is invalid"],
+    answer:2,
+    hint:"// x=5: outer (5>3) is true → enter outer block. Inner (5>7) is false → take inner else → print 'B'. Output: B. Nested ifs evaluate from outside in."
+  },
+  {
+    topic:2,difficulty:"hard",concept:"Infinite Loop",
+    text:"Identify why this creates an infinite loop: `int i=1; while(i<10){ cout<<i; }` What is missing?",
+    options:["A break statement inside the while condition","The increment/update statement — i never changes, so i<10 is always true","A return statement at the end of the loop body","An else clause to handle the false condition"],
+    answer:1,
+    hint:"// The loop variable i is never updated — it stays at 1 forever. i<10 is always true. Fix: add i++ inside the loop body. Classic beginner infinite loop bug!"
+  },
+  {
+    topic:2,difficulty:"hard",concept:"for Loop — Countdown",
+    text:"What is the output of: `for(int i=5; i>0; i-=2) cout<<i<<\" \";`",
+    options:["5 3 1","5 4 3 2 1","5 3","5 3 1 -1"],
+    answer:0,
+    hint:"// i starts at 5, decrement by 2 each time: i=5 (print 5) → i=3 (print 3) → i=1 (print 1) → i=-1, condition -1>0 false, exit. Output: '5 3 1'."
+  },
+  {
+    topic:2,difficulty:"hard",concept:"do-while Loop",
+    text:"What is the output of: `int n=10; do{ cout<<n<<\" \"; n-=3; } while(n>0);`",
+    options:["10 7 4 1","10 7 4","10 7","10 7 4 1 -2"],
+    answer:0,
+    hint:"// Trace: n=10 (print 10, n=7) → n=7 (print 7, n=4) → n=4 (print 4, n=1) → n=1 (print 1, n=-2) → condition -2>0 false, exit. Output: '10 7 4 1'."
+  },
+  {
+    topic:2,difficulty:"hard",concept:"Logical Operators — Short Circuit",
+    text:"In C++, if the first operand of `&&` is false, what happens to the second operand?",
+    options:["It is always evaluated for completeness","It is NOT evaluated — C++ uses short-circuit evaluation","It generates a compile warning","It defaults to true to prevent false-false condition"],
+    answer:1,
+    hint:"// Short-circuit evaluation: if A is false in (A && B), B is NEVER evaluated because false AND anything = false. Similarly, if A is true in (A || B), B is skipped. This prevents crashes like: if(ptr!=nullptr && ptr->val>0)"
+  },
+  {
+    topic:2,difficulty:"hard",concept:"Loop — Algorithm",
+    text:"What does this code compute? `int n=7, result=1; for(int i=2; i<=n; i++) result*=i; cout<<result;`",
+    options:["The sum 2+3+4+5+6+7 = 27","The value of n squared (49)","The factorial of n: 7! = 5040","The value of 2^7 = 128"],
+    answer:2,
+    hint:"// result starts at 1, then multiplies by i each iteration: 1×2×3×4×5×6×7 = 5040 = 7! (7 factorial). The factorial algorithm multiplies all integers from 1 to n."
+  },
+  {
+    topic:2,difficulty:"hard",concept:"Control Structures — Design",
+    text:"A program must repeatedly ask a user for a password until they enter the correct one, then display 'Access Granted'. Which control structure is MOST appropriate?",
+    options:["A for loop with a fixed counter of 3 attempts","A while loop checking the password before the first prompt","A do...while loop — the prompt must appear at least once before checking","A switch statement with cases for each possible password character"],
+    answer:2,
+    hint:"// do-while: display prompt (body runs first), read input, check condition. If wrong, repeat. This guarantees the user sees the prompt at least once and keeps retrying until correct."
+  }
+];
+
+/* ============================================================
+   CONCEPT HINTS MAP — curriculum-aligned explanations
+   ============================================================ */
+const HINTS = {
+  "Programming Paradigms":    "// Review Ch.1: A paradigm is the philosophical approach to problem-solving. C++ is multi-paradigm: imperative, OOP, and generic.",
+  "Imperative vs. Declarative":"// Review Ch.1: Imperative (HOW) = step-by-step instructions. Declarative (WHAT) = describe desired result. SQL and Prolog are declarative.",
+  "Declarative Programming":  "// Review Ch.1: Declarative languages express logic without control flow. Prolog, Erlang, SQL are examples.",
+  "Structured Programming":   "// Review Ch.1: Top-down / modular design. Break complex problems into functions/modules. Also called procedural programming.",
+  "Object-Oriented Programming":"// Review Ch.1: OOP organizes solutions around classes and objects. Key concepts: encapsulation, inheritance, polymorphism.",
+  "Algorithm Definition":     "// Review Ch.1: An algorithm is a finite, step-by-step solution to a problem, designed BEFORE coding begins.",
+  "Algorithm Design":         "// Review Ch.1: Algorithms must be precise, finite, and unambiguous. Good algorithm design reduces coding errors significantly.",
+  "Algorithm Complexity":     "// Review Ch.1: Big-O notation describes growth rate. O(n²) quadratic grows much faster than O(n) linear as input grows.",
+  "Source Code":              "// Review Ch.1: Source code (.cpp) is human-readable text created in an editor — the starting point of the pipeline.",
+  "C++ Processing Pipeline":  "// Review Ch.1: Preprocessor → Compiler → Linker → Loader. Each stage transforms code toward execution.",
+  "Object Code":              "// Review Ch.1: Compiler output (.obj) is machine-level but not yet executable — it needs the linker to resolve external references.",
+  "Problem Analysis-Coding-Execution Cycle":"// Review Ch.1: Analyze (design algorithm) → Code → Maintain. Never skip the analysis phase!",
+  "Preprocessor Directives":  "// Review Ch.1: #include, #define are preprocessor directives processed BEFORE compilation. They perform text substitution.",
+  "Linker Role":              "// Review Ch.1: The linker combines .obj files with library code to create one complete executable (.exe).",
+  "Loader Role":              "// Review Ch.1: The loader copies the executable from disk into RAM, then the CPU begins executing instructions.",
+  "Structured vs OOP":        "// Review Ch.1: Structured = functions. OOP = classes with data+behavior. OOP adds inheritance, encapsulation, polymorphism.",
+  "Paradigm Comparison":      "// Review Ch.1: Choose OOP for entity-rich domains. Choose procedural for linear data processing. Both are imperative.",
+  "Paradigm Application":     "// Review Ch.1: Model real-world entities as objects. OOP enables each entity to manage its own state and behaviors.",
+  "OOP Concepts":             "// Review Ch.1: Class = blueprint. Object = instance. Encapsulation hides data. Inheritance reuses behavior. Polymorphism adapts behavior.",
+  "Compiler Role":            "// Review Ch.1: The compiler does type-checking and translates source code to object code. Type errors are compile-time errors.",
+  "main() Function":          "// Review Ch.2: Every C++ program starts at main(). Without main(), the program has no entry point.",
+  "Tokens":                   "// Review Ch.2: Tokens are the atomic units of C++ code: keywords, identifiers, operators, literals, and punctuation.",
+  "Reserved Words":           "// Review Ch.2: Keywords (int, float, if, while, return) are reserved — you cannot use them as variable names.",
+  "Identifiers":              "// Review Ch.2: Must start with letter or underscore. Can contain letters, digits, underscores. Case-sensitive.",
+  "Data Types — Integral":    "// Review Ch.2: Integral types: int, char, bool, short, long. They store whole numbers (or characters/booleans).",
+  "Data Types — Floating Point":"// Review Ch.2: float (6-7 digits precision), double (15-16 digits). Always prefer double for calculations.",
+  "Data Types":               "// Review Ch.2: Choose data types based on range and precision needed. int for whole numbers, double for decimals, bool for flags.",
+  "Data Types — bool":        "// Review Ch.2: bool is an integral type: true=1, false=0. Used in conditions. Can be used in arithmetic.",
+  "Data Types — Overflow":    "// Review Ch.2: Overflow wraps around silently. Choose data types with sufficient range for your data.",
+  "Output — cout":            "// Review Ch.2: cout << uses the insertion operator. Chain multiple values: cout << 'x=' << x << endl;",
+  "Input — cin":              "// Review Ch.2: cin >> uses the extraction operator. Reads whitespace-delimited tokens from keyboard.",
+  "cin — Multiple Inputs":    "// Review Ch.2: cin >> x >> y chains extractions. Reads whitespace-separated values in order.",
+  "cin — Data Types":         "// Review Ch.2: cin stops reading at the first character that doesn't fit the target type. Mismatches leave data in the buffer.",
+  "Modulus Operator":         "// Review Ch.2: % (modulus) gives remainder of integer division. Only works with integers. Use for even/odd checks, cycling.",
+  "Arithmetic Operators":     "// Review Ch.2: Precedence: *, /, % before +, -. Use parentheses to control order. Integer division truncates.",
+  "Integer Division & Modulus":"// Review Ch.2: Integer division truncates. Modulus gives remainder. Together they decompose a number: n = (n/d)*d + (n%d).",
+  "Type Conversion":          "// Review Ch.2: If BOTH operands are int, division is integer. To get float result, make at least one operand a float/double.",
+  "Variable Declaration":     "// Review Ch.2: Syntax: DataType name = value; Always initialize! Uninitialized variables contain garbage values.",
+  "Variable Scope":           "// Review Ch.2: Local variables exist only within their declaring block {}. They are destroyed when the block ends.",
+  "String Data Type":         "// Review Ch.2: string stores character sequences in double quotes. char stores single characters in single quotes.",
+  "String Operations":        "// Review Ch.2: string has methods: .length(), .size(), .substr(), .find(). Must #include <string>.",
+  "Operators":                "// Review Ch.2: Relational operators return bool (true/false = 1/0). Adding booleans works in C++ arithmetic.",
+  "Relational Operators":     "// Review Ch.3: ==, !=, <, >, <=, >= create logical (boolean) expressions for decision-making in control structures.",
+  "if Statement":             "// Review Ch.3: One-way selection. Body executes only if condition is true. No else = no action when false.",
+  "if-else Statement":        "// Review Ch.3: Two-way selection. Exactly one branch executes. Use else-if chains for multiple conditions.",
+  "if-else Chain":            "// Review Ch.3: Else-if evaluates top to bottom, takes FIRST true branch. Only one branch ever executes.",
+  "while Loop":               "// Review Ch.3: PRETEST loop. Condition checked BEFORE body. May execute 0 times if condition starts false.",
+  "do-while Loop":            "// Review Ch.3: POSTTEST loop. Body executes FIRST, condition checked after. Guarantees at least 1 execution.",
+  "for Loop":                 "// Review Ch.3: Best for KNOWN iteration counts. Header: (init; condition; update). Clean and self-contained.",
+  "for Loop — Countdown":     "// Review Ch.3: for loops can count down (i--) or skip (i+=2). The step can be any update expression.",
+  "switch Statement":         "// Review Ch.3: Multi-way selection based on expression value. Each case needs break to prevent fall-through.",
+  "switch Fall-Through":      "// Review Ch.3: Missing break causes fall-through to next case. Usually a bug — always add break unless intentional.",
+  "break Statement":          "// Review Ch.3: break immediately exits the nearest loop or switch. Execution resumes after the closing }.",
+  "continue Statement":       "// Review Ch.3: continue skips to the next iteration. Does NOT exit the loop. break exits; continue skips.",
+  "break and continue":       "// Review Ch.3: continue skips current iteration body. break exits the entire loop. Both alter normal sequential flow.",
+  "Compound Statement":       "// Review Ch.3: {} groups multiple statements into one logical unit. Required when if/while/for body has >1 statement.",
+  "Logical Operators":        "// Review Ch.3: && (AND), || (OR), ! (NOT). && requires BOTH true. || requires at least one true. ! inverts.",
+  "Logical Operators — Short Circuit":"// Review Ch.3: Short-circuit: false&&anything=false (skip right). true||anything=true (skip right). Prevents null pointer dereference bugs.",
+  "Relational & Logical Operators":"// Review Ch.3: Combine with &&, || to test ranges and complex conditions: if(x>=5 && x<=10).",
+  "Loop Types Comparison":    "// Review Ch.3: for=known count, while=unknown count pretest, do-while=at-least-once posttest, sentinel=special stop value.",
+  "Sentinel-Controlled Loop": "// Review Ch.3: Sentinel = special value to stop loop. User enters -1, 0, or 'done' to signal the end of input.",
+  "Counter-Controlled Loop":  "// Review Ch.3: Counter-controlled = exact count known. Use for loop. Increment/decrement the counter each iteration.",
+  "Nested Loops":             "// Review Ch.3: Nested loops: outer×inner = total iterations. Used for grids, tables, pattern printing, 2D arrays.",
+  "Nested Conditions":        "// Review Ch.3: Nested ifs evaluate outer first, then inner. The else binds to the nearest unmatched if.",
+  "Infinite Loop":            "// Review Ch.3: Missing update in while loop = infinite loop. Always ensure loop variables change to eventually fail the condition.",
+  "Loop Output Tracing":      "// Review Ch.3: Trace loops by hand: write variable values at each step. Check condition → execute body → update → repeat.",
+  "Loop — Algorithm":         "// Review Ch.3: Accumulation pattern: start result=1 (or 0), multiply (or add) in each iteration. Classic factorial/sum algorithms.",
+  "Control Structures — Design":"// Review Ch.3: Match the structure to the problem: menu → do-while, count → for, unknown end → while/sentinel.",
+};
+
+/* ============================================================
+   TOPIC METADATA
+   ============================================================ */
+const TOPICS_META = [
+  { title:"Introduction to IT & Systems Analysis", short:"Path 01 // Ch.1", color:"#3d9cf5" },
+  { title:"C++ Fundamentals & Syntax Mechanics",   short:"Path 02 // Ch.2", color:"#9be322" },
+  { title:"Control Structures & Program Flow",      short:"Path 03 // Ch.3", color:"#f5c842" }
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let state = {
+  topicId:     null,
+  questions:   [],
+  currentIdx:  0,
+  answers:     [],
+  submitted:   false,
+  xp:          0,
+  streak:      0,
+  bestStreak:  0,
+  lastCorrect: false
+};
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function $(id){ return document.getElementById(id); }
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function showHome(){
+  state = { topicId:null, questions:[], currentIdx:0, answers:[], submitted:false,
+            xp:state.xp, streak:state.streak, bestStreak:state.bestStreak, lastCorrect:false };
+  showScreen('screen-home');
+}
+function confirmHome(){
+  const anyAnswered = state.answers.some(a=>a!==null);
+  if(!state.submitted && anyAnswered){
+    if(!confirm('// ABORT MISSION? Your progress will be lost.')) return;
+  }
+  showHome();
+}
+function getTopicQuestions(tid){
+  const all = QB.filter(q=>q.topic===tid);
+  return [...all.filter(q=>q.difficulty==='easy'),
+          ...all.filter(q=>q.difficulty==='medium'),
+          ...all.filter(q=>q.difficulty==='hard')];
+}
+function updateHUD(){
+  $('xp-val').textContent     = state.xp;
+  $('streak-val').textContent = state.streak;
+  const correct  = state.answers.filter((a,i)=>a!==null&&a===state.questions[i].answer).length;
+  const answered = state.answers.filter(a=>a!==null).length;
+  $('hud-score-txt').textContent = `${correct}/${answered}`;
+}
+
+/* ============================================================
+   START QUIZ
+   ============================================================ */
+function startQuiz(topicId){
+  state.topicId   = topicId;
+  state.questions = getTopicQuestions(topicId);
+  state.currentIdx= 0;
+  state.answers   = new Array(state.questions.length).fill(null);
+  state.submitted = false;
+  state.streak    = 0;
+  state.lastCorrect = false;
+
+  $('qh-topic').textContent = TOPICS_META[topicId].title;
+  showScreen('screen-quiz');
+  renderQuestion();
+  renderSidebar();
+}
+
+/* ============================================================
+   RENDER QUESTION
+   ============================================================ */
+function renderQuestion(){
+  const q    = state.questions[state.currentIdx];
+  const idx  = state.currentIdx;
+  const total= state.questions.length;
+
+  // Header meta
+  $('qh-meta').textContent = `// Q${idx+1} of ${total} — ${q.difficulty.toUpperCase()}`;
+
+  // Glow progress
+  const answered = state.answers.filter(a=>a!==null).length;
+  const pct = Math.round((answered/total)*100);
+  $('gp-fill').style.width  = pct+'%';
+  $('gp-label').textContent = `${answered} / ${total}`;
+  $('gp-pct').textContent   = pct+'%';
+  $('global-bar').style.width = pct+'%';
+
+  // Terminal path
+  $('term-path').innerHTML = `~/quiz/<span>${q.difficulty}</span>`;
+
+  // Badges
+  const diffClass = { easy:'qb-easy', medium:'qb-medium', hard:'qb-hard' }[q.difficulty];
+  $('q-badge-row').innerHTML =
+    `<span class="q-badge ${diffClass}">${q.difficulty.toUpperCase()}</span>
+     <span class="q-badge qb-concept">${q.concept}</span>`;
+
+  // Num
+  $('q-num').textContent  = `Q${String(idx+1).padStart(2,'0')}`;
+  $('q-counter').textContent = `Question ${idx+1} of ${total}`;
+
+  // Text
+  $('q-text').textContent = q.text;
+
+  // Options
+  const letters = ['A','B','C','D'];
+  const optEl   = $('options-list');
+  const userAns = state.answers[idx];
+  const submitted = state.submitted;
+  optEl.innerHTML = '';
+
+  q.options.forEach((opt,oi)=>{
+    let cls = 'opt-btn';
+    let iconHtml = '';
+
+    if(submitted || userAns !== null){
+      cls += ' opt-disabled';
+      if(oi === q.answer){
+        cls += ' opt-correct';
+        iconHtml = '✓';
+      } else if(oi === userAns && oi !== q.answer){
+        cls += ' opt-wrong';
+        iconHtml = '✗';
+      }
+    } else {
+      if(oi === userAns) cls += ' opt-selected';
+    }
+
+    const btn = document.createElement('button');
+    btn.className = cls;
+    btn.innerHTML = `
+      <div class="opt-letter">${letters[oi]}</div>
+      <div class="opt-text">${opt}</div>
+      <div class="opt-icon">${iconHtml}</div>
+    `;
+    if(!submitted && userAns === null){
+      btn.addEventListener('click',()=>selectAnswer(oi));
+    }
+    optEl.appendChild(btn);
+  });
+
+  // Hacker Hint
+  const hintEl = $('hacker-hint');
+  if(userAns !== null || submitted){
+    const isCorrect = userAns === q.answer;
+    hintEl.className = 'hacker-hint show ' + (isCorrect ? 'hint-correct' : 'hint-wrong');
+    hintEl.innerHTML = isCorrect
+      ? `<span class="hint-label">// INTEL CONFIRMED</span><strong>[✓] Correct!</strong> ${q.hint}`
+      : `<span class="hint-label">// HACKER HINT</span><strong>[✗] Incorrect.</strong> Correct answer: <strong>${letters[q.answer]}: ${q.options[q.answer]}</strong><br>${q.hint}`;
+  } else {
+    hintEl.className = 'hacker-hint';
+    hintEl.innerHTML = '';
+  }
+
+  // Nav buttons
+  $('btn-prev').disabled = idx === 0;
+  const isLast = idx === total-1;
+  if(submitted){
+    $('btn-next').style.display   = isLast ? 'none' : 'inline-flex';
+    $('btn-submit').style.display = 'none';
+  } else if(isLast){
+    $('btn-next').style.display   = 'none';
+    $('btn-submit').style.display = 'inline-flex';
+  } else {
+    $('btn-next').style.display   = 'inline-flex';
+    $('btn-submit').style.display = 'none';
+  }
+
+  // Animate terminal
+  const term = $('q-terminal');
+  term.classList.remove('anim');
+  void term.offsetWidth;
+  term.classList.add('anim');
+
+  // Live score + sidebar
+  $('live-correct').textContent = state.answers.filter((a,i)=>a!==null&&a===state.questions[i].answer).length;
+  $('live-total').textContent   = state.answers.filter(a=>a!==null).length;
+  updateHUD();
+  renderSidebar();
+}
+
+/* ============================================================
+   SELECT ANSWER
+   ============================================================ */
+function selectAnswer(oi){
+  if(state.submitted) return;
+  state.answers[state.currentIdx] = oi;
+
+  const isCorrect = oi === state.questions[state.currentIdx].answer;
+
+  // XP and streak
+  if(isCorrect){
+    state.xp += 10;
+    state.streak++;
+    if(state.streak > state.bestStreak) state.bestStreak = state.streak;
+    // Bonus XP for streak
+    if(state.streak>=3) state.xp += 5;
+  } else {
+    state.streak = 0;
+    state.xp = Math.max(0, state.xp - 2);
+  }
+
+  renderQuestion();
+}
+
+/* ============================================================
+   NAVIGATE
+   ============================================================ */
+function navigate(dir){
+  const newIdx = state.currentIdx + dir;
+  if(newIdx < 0 || newIdx >= state.questions.length) return;
+  state.currentIdx = newIdx;
+  renderQuestion();
+}
+
+/* ============================================================
+   RENDER SIDEBAR
+   ============================================================ */
+function renderSidebar(){
+  const grid = $('node-grid');
+  grid.innerHTML = '';
+
+  state.questions.forEach((q,i)=>{
+    const node = document.createElement('div');
+    let cls = 'q-node';
+    if(i === state.currentIdx)             cls += ' q-node--current';
+    else if(state.answers[i] !== null){
+      if(state.submitted){
+        cls += state.answers[i]===q.answer ? ' q-node--correct' : ' q-node--wrong';
+      } else {
+        cls += ' q-node--answered';
+      }
+    }
+    node.className = cls;
+    node.textContent = i+1;
+    node.title = `Q${i+1}: ${q.concept} [${q.difficulty}]`;
+    node.addEventListener('click',()=>{ state.currentIdx=i; renderQuestion(); });
+    grid.appendChild(node);
+  });
+}
+
+/* ============================================================
+   SUBMIT MISSION
+   ============================================================ */
+function submitMission(){
+  const unanswered = state.answers.filter(a=>a===null).length;
+  if(unanswered > 0){
+    if(!confirm(`// ${unanswered} question(s) unanswered. Submit anyway?`)) return;
+  }
+  state.submitted = true;
+  // Bonus XP for completing
+  state.xp += 25;
+  updateHUD();
+  showResults();
+}
+
+/* ============================================================
+   SHOW RESULTS
+   ============================================================ */
+function showResults(){
+  showScreen('screen-results');
+
+  const qs    = state.questions;
+  const ans   = state.answers;
+  const total = qs.length;
+  let correct=0, wrong=0, skipped=0;
+
+  qs.forEach((q,i)=>{
+    if(ans[i]===null) skipped++;
+    else if(ans[i]===q.answer) correct++;
+    else wrong++;
+  });
+
+  const pct = Math.round((correct/total)*100);
+
+  // Emoji + title
+  let emoji, title, sub;
+  if(pct>=90){emoji='🏆';title='MISSION ACCOMPLISHED';sub='// Elite-level performance. You\'ve mastered this path.';}
+  else if(pct>=75){emoji='🎯';title='OBJECTIVE CLEARED';sub='// Strong execution. A few knowledge gaps remain.';}
+  else if(pct>=60){emoji='💻';title='PARTIAL SUCCESS';sub='// Solid base detected. Review flagged concepts below.';}
+  else if(pct>=40){emoji='📡';title='SIGNAL WEAK';sub='// Return to study materials and re-run the mission.';}
+  else{emoji='🔴';title='MISSION FAILED';sub='// Critical knowledge gaps detected. Full debrief required.';}
+
+  $('res-emoji').textContent = emoji;
+  $('res-title').textContent = title;
+  $('res-sub').textContent   = sub;
+  $('ring-pct').textContent  = pct+'%';
+
+  // Ring
+  const circ = 439.82;
+  const fg = $('sr-fg');
+  const ringColor = pct>=75 ? '#9be322' : pct>=50 ? '#f5c842' : '#ff4b2b';
+  fg.style.stroke = ringColor;
+  fg.style.strokeDashoffset = circ;
+  fg.style.filter = `drop-shadow(0 0 6px ${ringColor})`;
+  setTimeout(()=>{ fg.style.strokeDashoffset = circ-(pct/100)*circ; },120);
+
+  // Stats
+  $('stat-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-card__val sv-total">${total}</div><div class="stat-card__lbl">TOTAL</div></div>
+    <div class="stat-card"><div class="stat-card__val sv-correct">${correct}</div><div class="stat-card__lbl">CORRECT</div></div>
+    <div class="stat-card"><div class="stat-card__val sv-wrong">${wrong}</div><div class="stat-card__lbl">WRONG</div></div>
+    <div class="stat-card"><div class="stat-card__val sv-skip">${skipped}</div><div class="stat-card__lbl">SKIPPED</div></div>
+    <div class="stat-card"><div class="stat-card__val sv-pct">${pct}%</div><div class="stat-card__lbl">SCORE</div></div>
+    <div class="stat-card"><div class="stat-card__val" style="color:#f5c842">${state.xp}</div><div class="stat-card__lbl">XP EARNED</div></div>
+  `;
+
+  buildConceptBreakdown();
+  buildReview();
+  updateProgressRings();
+}
+
+/* ============================================================
+   CONCEPT BREAKDOWN
+   ============================================================ */
+function buildConceptBreakdown(){
+  const map = {};
+  state.questions.forEach((q,i)=>{
+    if(!map[q.concept]) map[q.concept]={correct:0,total:0};
+    map[q.concept].total++;
+    if(state.answers[i]===q.answer) map[q.concept].correct++;
+  });
+
+  const sorted = Object.entries(map).sort((a,b)=>(a[1].correct/a[1].total)-(b[1].correct/b[1].total));
+
+  $('concept-grid').innerHTML = '';
+  sorted.forEach(([concept,stats])=>{
+    const pct = Math.round((stats.correct/stats.total)*100);
+    let cls, lbl;
+    if(pct>=75){cls='cc-strong';lbl='[✓] PROFICIENT';}
+    else if(pct>=50){cls='cc-avg';lbl='[~] NEEDS REVIEW';}
+    else{cls='cc-weak';lbl='[✗] KNOWLEDGE GAP';}
+
+    const hintText = HINTS[concept] || `// Review your notes on "${concept}" in the study materials.`;
+
+    const card = document.createElement('div');
+    card.className = `concept-card ${cls}`;
+    card.innerHTML = `
+      <div class="cc-name">${concept}</div>
+      <div class="cc-bar-wrap"><div class="cc-bar" style="width:0%" data-pct="${pct}"></div></div>
+      <div class="cc-meta">${lbl} — ${stats.correct}/${stats.total} correct (${pct}%)</div>
+      <div class="cc-hint">${hintText}</div>
+    `;
+    $('concept-grid').appendChild(card);
+  });
+
+  setTimeout(()=>{
+    document.querySelectorAll('.cc-bar').forEach(b=>{ b.style.width=b.dataset.pct+'%'; });
+  },200);
+}
+
+/* ============================================================
+   FULL REVIEW
+   ============================================================ */
+function buildReview(){
+  const letters = ['A','B','C','D'];
+  const list    = $('review-list');
+  list.innerHTML = '';
+
+  state.questions.forEach((q,i)=>{
+    const ua = state.answers[i];
+    const isCorrect = ua===q.answer;
+    const isSkipped = ua===null;
+
+    let cls = 'review-item ';
+    cls += isSkipped ? 'ri-skip' : (isCorrect ? 'ri-correct' : 'ri-wrong');
+
+    let detail = '';
+    if(isSkipped){
+      detail = `<span class="ri-ans ria-skip">// SKIPPED</span>
+        <span class="ri-ans ria-correct">✓ Correct: ${letters[q.answer]}) ${q.options[q.answer]}</span>`;
+    } else if(isCorrect){
+      detail = `<span class="ri-ans ria-correct">✓ Your answer: ${letters[ua]}) ${q.options[ua]}</span>`;
+    } else {
+      detail = `<span class="ri-ans ria-wrong">✗ Your answer: ${letters[ua]}) ${q.options[ua]}</span>
+        <span class="ri-ans ria-correct">✓ Correct: ${letters[q.answer]}) ${q.options[q.answer]}</span>`;
+    }
+
+    list.innerHTML += `
+      <div class="${cls}">
+        <div class="ri-q">Q${i+1}. ${q.text}</div>
+        <div class="ri-detail">${detail}</div>
+      </div>
+    `;
+  });
+}
+
+/* ============================================================
+   UPDATE PROGRESS RINGS ON HOME (after completing)
+   ============================================================ */
+function updateProgressRings(){
+  // This fires when results screen is shown
+  // We'll update the ring for the completed topic
+  // Store completions in a simple object
+  if(!window.completions) window.completions = {};
+  if(!window.completions[state.topicId]){
+    const total   = state.questions.length;
+    const correct = state.answers.filter((a,i)=>a!==null&&a===state.questions[i].answer).length;
+    window.completions[state.topicId] = Math.round((correct/total)*100);
+  }
+}
+
+function refreshHomeRings(){
+  if(!window.completions) return;
+  Object.entries(window.completions).forEach(([tid,pct])=>{
+    const circ = 2*Math.PI*22; // r=22 → 138.23
+    const offset = circ-(pct/100)*circ;
+    const fgEl = $(`ring-fg-${tid}`);
+    const pctEl = $(`ring-pct-${tid}`);
+    if(fgEl){
+      fgEl.style.strokeDashoffset = offset;
+      fgEl.style.filter='drop-shadow(0 0 4px #9be322)';
+    }
+    if(pctEl) pctEl.textContent = pct+'%';
+  });
+}
+
+/* Override showHome to refresh rings */
+const _origShowHome = showHome;
+function showHome(){
+  _origShowHome();
+  setTimeout(refreshHomeRings, 100);
+}
+
+/* ============================================================
+   RETAKE
+   ============================================================ */
+function retakeQuiz(){ startQuiz(state.topicId); }
+
+/* ============================================================
+   INIT
+   ============================================================ */
+showHome();
+</script>
+</body>
+</html>
